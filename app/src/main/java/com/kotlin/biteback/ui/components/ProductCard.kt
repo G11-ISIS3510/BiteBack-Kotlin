@@ -2,6 +2,7 @@ package com.kotlin.biteback.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -25,14 +26,15 @@ fun ProductCard(
     title: String,
     oldPrice: Int,
     time: String,
-    category: String
+    category: String,
+    onClick: () -> Unit
 ) {
     var discountFormat: Int = (discount * 100).toInt()
     var actualPrice: Int = (oldPrice * discount).toInt()
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.height(250.dp).width(220.dp)
+        modifier = Modifier.height(250.dp).width(220.dp).clickable { onClick() }
     ) {
         Box(
             modifier = Modifier.fillMaxSize()

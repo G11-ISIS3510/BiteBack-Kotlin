@@ -22,7 +22,9 @@ fun Home(navController: NavController , viewModel: HomeViewModel = viewModel<Hom
             title = "Filete with papas.",
             oldPrice = 25000,
             time = "15 minutos",
-            category = "Paisas food")
+            category = "Paisas food",
+            onClick = { navController.navigate("productDetail") })
+
 
 //        Button(onClick = { navController.navigate("profile") }) {
 //            Text("Ir a Perfil")
