@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.res.painterResource
+import com.kotlin.biteback.R
+import androidx.compose.foundation.Image
 
 @Composable
 fun Login(navController: NavController, viewModel: LoginViewModel = viewModel()) {
@@ -39,12 +42,25 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // LOGO & Branding
-            Text(
-                "Biteback",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFFF9800)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.biteback_logo),
+                    contentDescription = "Biteback Logo",
+                    modifier = Modifier.size(50.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    "Biteback",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFF9800)
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Text("Más baratos, más accesibles.", fontSize = 16.sp, color = Color.Gray)
 
@@ -101,7 +117,13 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                     colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
                 ) {
-                    Text("🔵 Sign in with Google")
+                    Image(
+                        painter = painterResource(id = R.drawable.google_logo),
+                        contentDescription = "Google Logo",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Google")
                 }
 
                 Button(
@@ -110,9 +132,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
                 ) {
-                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text("Correo electrónico", color = Color.White)
+                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo Electrónico")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Correo Electrónico", color = Color.White)
                 }
             }
 
