@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.foundation.BorderStroke
 
 @Composable
 fun Login(navController: NavController, viewModel: LoginViewModel = viewModel()) {
@@ -61,8 +62,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                         containerColor = if (isRegisterMode) Color(0xFFFF9800) else Color.White,
                         contentColor = if (isRegisterMode) Color.White else Color.Black
                     ),
+                    border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
-                        .shadow(5.dp)
+                        .padding(2.dp)
                         .weight(1f)
                 ) {
                     Text("Registrarse")
@@ -77,8 +79,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                         containerColor = if (!isRegisterMode) Color(0xFFFF9800) else Color.White,
                         contentColor = if (!isRegisterMode) Color.White else Color.Black
                     ),
+                    border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
-                        .shadow(5.dp)
+                        .padding(2.dp)
                         .weight(1f)
                 ) {
                     Text("Iniciar sesión")
@@ -152,7 +155,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
 
             // Submit Button
             Button(
-                onClick = { /* Register/Login Action */ },
+                onClick = {
+                    navController.navigate("home")
+                },
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier
@@ -162,6 +167,7 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
             ) {
                 Text("Iniciar sesión →", color = Color.White, fontSize = 18.sp)
             }
+
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -175,7 +181,7 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                     "Recuperarla",
                     color = Color(0xFFFF9800),
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterVertically) // ✅ Fix alignment
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
             }
         }
