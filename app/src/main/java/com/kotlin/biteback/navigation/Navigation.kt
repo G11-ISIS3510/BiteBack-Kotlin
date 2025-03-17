@@ -12,8 +12,15 @@ import com.kotlin.biteback.ui.login.Login
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "login") {
-        composable("login") { Login(navController) }
-        composable("home") { Home(navController) }
+
+    NavHost(navController, startDestination = "home") {
+        composable("home") { Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ }) }
+        
+// TODO: Connect
+//     NavHost(navController, startDestination = "login") {
+//         composable("login") { Login(navController) }
+//         compoable("home") { Home(navController) }
+
+
     }
 }
