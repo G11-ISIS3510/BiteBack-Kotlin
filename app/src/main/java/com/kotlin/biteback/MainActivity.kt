@@ -43,7 +43,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
         // Texto de prueba
         Text(
-            text = "Hello $name!",
+            text = "Alo $name!",
             modifier = modifier
         )
     }

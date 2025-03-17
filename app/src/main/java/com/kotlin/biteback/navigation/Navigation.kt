@@ -12,7 +12,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(navController, startDestination = "home") {
-        composable("home") { Home(navController) }
+        composable("home") { Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ }) }
 
     }
 }
