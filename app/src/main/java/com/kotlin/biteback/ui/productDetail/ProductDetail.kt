@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kotlin.biteback.R
 import com.kotlin.biteback.ui.components.BackButton
+import com.kotlin.biteback.ui.components.NavBar
 
 @Composable
 fun ProductDetailScreen(navController: NavController, viewModel: ProductDetailViewModel = viewModel()) {
@@ -100,6 +101,13 @@ fun ProductDetailScreen(navController: NavController, viewModel: ProductDetailVi
                     Text("Me lo merco")
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            NavBar(navController = navController, currentRoute = "productDetail")
         }
 
         BackButton(
