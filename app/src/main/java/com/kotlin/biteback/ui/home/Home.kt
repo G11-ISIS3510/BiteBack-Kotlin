@@ -219,7 +219,8 @@ fun Home(navController: NavController ,
                 title = "Filete with papas.",
                 oldPrice = 25000,
                 time = "15 minutos",
-                category = "Paisas food")
+                category = "Paisas food",
+                onClick = { navController.navigate("productDetail") })
         }
 
         // Food Recomendations
