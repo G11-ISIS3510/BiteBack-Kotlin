@@ -27,14 +27,16 @@ fun ProductCard(
     oldPrice: Int,
     time: String,
     category: String,
-    onClick: () -> Unit
 ) {
     var discountFormat: Int = (discount * 100).toInt()
     var actualPrice: Int = (oldPrice * discount).toInt()
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.height(250.dp).width(220.dp).clickable { onClick() }
+
+        modifier = Modifier.height(250.dp).width(220.dp).padding(end = 16.dp)
+
+
     ) {
         Box(
             modifier = Modifier.fillMaxSize()

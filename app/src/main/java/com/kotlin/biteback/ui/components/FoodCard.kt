@@ -2,6 +2,7 @@ package com.kotlin.biteback.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,28 +38,30 @@ import androidx.compose.material3.IconButton
 fun FoodCard(
     image: Painter,
     title: String,
-    discount: String,
+    discount: Double,
     location: String,
-    price: String,
-    oldPrice: String,
+    price: Double,
     expanded: Boolean = false,
     onAddClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+
+    var actualPrice: Int = (price * (discount/100)).toInt()
+
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = modifier
             .then(if (expanded) Modifier.fillMaxWidth() else Modifier.width(270.dp))
-            .height(120.dp)
+            .height(120.dp).padding(end = 16.dp).clickable { /* Acción al hacer clic */ }
 
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 🔹 Imagen del producto
+
             Image(
                 painter = image,
                 contentDescription = "Food Image",
@@ -73,7 +76,7 @@ fun FoodCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // 🔹 Título
+                // Title
                 Text(
                     text = title,
                     fontSize = 18.sp,
@@ -83,8 +86,9 @@ fun FoodCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 🔹 Descuento
+                // Discount
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Icon(
                         imageVector = Icons.Filled.ShoppingCart,
                         contentDescription = "Discount",
@@ -93,7 +97,7 @@ fun FoodCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = discount,
+                        text = "$discount% DCTO",
                         fontSize = 14.sp,
                         color = Color.Gray
                     )
@@ -101,7 +105,7 @@ fun FoodCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 🔹 Ubicación
+                // Location
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.LocationOn,
@@ -119,17 +123,17 @@ fun FoodCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 🔹 Precio
+                // Price
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = price,
+                        text = "$$actualPrice",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFF8800)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = oldPrice,
+                        text = "$$price",
                         fontSize = 14.sp,
                         color = Color.Gray,
                         textDecoration = TextDecoration.LineThrough
