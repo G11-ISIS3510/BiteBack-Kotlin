@@ -1,36 +1,41 @@
 package com.kotlin.biteback.ui.productDetail
 
 import androidx.lifecycle.ViewModel
-import com.kotlin.biteback.R
+import androidx.lifecycle.viewModelScope
+import com.kotlin.biteback.data.model.Product
+import com.kotlin.biteback.data.repository.ProductDetailRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-data class Product(
-    val name: String,
-    val price: Double,
-    val oldPrice: Double,
-    val imageRes: Int,
-    val timeLeft: String,
-    val savings: Double,
-    val store: String,
-    val distance: String,
-    val description: String
-)
+class ProductDetailViewModel(private val repository: ProductDetailRepository) : ViewModel() {
 
-class ProductDetailViewModel : ViewModel() {
-    private val _product = MutableStateFlow(
-        Product(
-            name = "Magnificarne",
-            price = 12000.0,
-            oldPrice = 25000.0,
-            imageRes = R.drawable.steak_image,
-            timeLeft = "12 horas",
-            savings = 13000.0,
-            store = "MCpolas",
-            distance = "2km",
-            description = "Se trata de una gran hamburguesa con queso, cocinando en una hamburguesa grande con dos hamburguesas como bollos, hay muchas capas de queso cheddar derretido, y también lleva Ketchup del Himalaya (Salsa del Himalaya), tiene dos bollos de pan usados como bollos."
-        )
-    )
+    private val _product = MutableStateFlow<Product?>(null)
+    val product: StateFlow<Product?> = _product
 
-    val product: StateFlow<Product> = _product
+    private val _formattedExpirationDate = MutableStateFlow("Cargando...")
+    val formattedExpirationDate: StateFlow<String> = _formattedExpirationDate
+
+    fun fetchProduct(productId: String) {
+        viewModelScope.launch {
+            val fetchedProduct = repository.getProductById(productId)
+            fetchedProduct?.let { product ->
+                val businessName = repository.getBusinessName(product.businessId)
+                val expirationText = formatExpirationDate(product.expirationDate)
+
+                _product.value = product.copy(
+                    businessId = businessName
+                )
+                _formattedExpirationDate.value = expirationText
+            }
+        }
+    }
+
+    private fun formatExpirationDate(timestamp: Long): String {
+        val currentTime = System.currentTimeMillis() / 1000
+        val remainingSeconds = timestamp - currentTime
+        val remainingDays = (remainingSeconds / 86400).toInt()
+        return if (remainingDays > 0) "$remainingDays días" else "Expira hoy"
+    }
 }
+
