@@ -263,6 +263,7 @@ fun Home(navController: NavController ,
                     category = product.category,
                 )
             }
+
         }
 
         // Food Recomendations
