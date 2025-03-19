@@ -46,6 +46,7 @@ import com.kotlin.biteback.ui.components.BannerCard
 import com.kotlin.biteback.ui.components.CategoryCard
 import com.kotlin.biteback.ui.components.ExploreCard
 import com.kotlin.biteback.ui.components.FoodCard
+import com.kotlin.biteback.ui.components.NavBar
 import com.kotlin.biteback.ui.components.ProductCard
 
 import com.kotlin.biteback.ui.locationText.LocationText
@@ -79,6 +80,7 @@ fun Home(navController: NavController ,
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+
 
         ) {
 
@@ -145,10 +147,11 @@ fun Home(navController: NavController ,
                         location = product.businessName,
                         price = product.price,
                         expanded = false,
-                        onAddClick = { /* Acción cuando se presiona el botón */ }
+                        onAddClick = { navController.navigate("productDetail/${product.id}") }
                     )
                 }
             }
+
         }
 
         // Banner Section
@@ -261,6 +264,7 @@ fun Home(navController: NavController ,
                     oldPrice = product.price.toInt(),
                     time = "15 minutos",
                     category = product.category,
+                    onClick = { navController.navigate("productDetail/${product.id}") }
                 )
             }
 
@@ -268,6 +272,7 @@ fun Home(navController: NavController ,
 
         // Food Recomendations
         Spacer(modifier = Modifier.height(12.dp))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -329,7 +334,7 @@ fun Home(navController: NavController ,
             )
         }
 
-
+        NavBar(navController = navController, currentRoute = "home") //TODO Acomodar correctamente
 
 //        Button(onClick = { navController.navigate("profile") }) {
 //            Text("Ir a Perfil")

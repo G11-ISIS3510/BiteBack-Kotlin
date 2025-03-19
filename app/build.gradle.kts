@@ -66,10 +66,14 @@ dependencies {
     implementation("androidx.compose.material:material:1.7.8")
     implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation ("com.google.android.gms:play-services-location:21.0.1")
-    implementation ("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
-    implementation ("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
+}
 
 
 

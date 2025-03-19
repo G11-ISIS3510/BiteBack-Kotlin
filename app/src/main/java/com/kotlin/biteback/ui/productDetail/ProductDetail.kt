@@ -16,99 +16,111 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.kotlin.biteback.R
+import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.components.BackButton
-import com.kotlin.biteback.ui.components.NavBar
+import com.kotlin.biteback.data.repository.ProductDetailRepository
 
 @Composable
-fun ProductDetailScreen(navController: NavController, viewModel: ProductDetailViewModel = viewModel()) {
+fun ProductDetailScreen(navController: NavController, productId: String) {
+    val factory = ProductDetailViewModelFactory(ProductDetailRepository())
+    val viewModel: ProductDetailViewModel = viewModel(factory = factory)
     val product by viewModel.product.collectAsState()
     var quantity by remember { mutableStateOf(1) }
 
+    LaunchedEffect(productId) {
+        viewModel.fetchProduct(productId)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            ProductImageWithBlur(imageRes = product.imageRes)
+
+            product?.let {
+                ProductImageWithBlur(imageUrl = it.image)
+            }
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = product.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                product?.let {
                     Text(
-                        text = "$${product.price.toInt()}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color(0xFFFFA000),
+                        text = it.name,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "$${product.oldPrice.toInt()}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray,
-                        textDecoration = TextDecoration.LineThrough
-                    )
-                }
 
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
-                    Text(text = "Cantidad:")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(onClick = { if (quantity > 1) quantity-- }) {
-                        Text("-", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Text(text = quantity.toString(), fontSize = 18.sp)
-                    IconButton(onClick = { quantity++ }) {
-                        Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProductInfoCard(label = "Para vencer", value = product.timeLeft)
-                    ProductInfoCard(label = "Ahorrados", value = "$${product.savings.toInt()}")
-                    ProductInfoCard(label = "Tienda", value = product.store)
-                    ProductInfoCard(label = "Distancia", value = product.distance)
-                }
-
-                Text(text = "Descripción", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = product.description, style = MaterialTheme.typography.bodyMedium)
-
-                InstructionsIngredientsSwitch()
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFDEDED)),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                ) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Red)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "$${it.price.toInt()}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFFFFA000),
+                            fontWeight = FontWeight.Bold
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            text = "$${(it.price / (1 - (it.discount / 100))).toInt()}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray,
+                            textDecoration = TextDecoration.LineThrough
+                        )
                     }
-                }
 
-                Button(
-                    onClick = { /* Acción */ },
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA000))
-                ) {
-                    Text("Me lo merco")
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+                        Text(text = "Cantidad:")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(onClick = { if (quantity > 1) quantity-- }) {
+                            Text("-", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text(text = quantity.toString(), fontSize = 18.sp)
+                        IconButton(onClick = { quantity++ }) {
+                            Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        val formattedExpirationDate by viewModel.formattedExpirationDate.collectAsState()
+                        ProductInfoCard(label = "Expira en", value = formattedExpirationDate)
+                        ProductInfoCard(label = "Descuento", value = "${it.discount}%")
+                        ProductInfoCard(label = "Tienda", value = it.businessId)
+                    }
+
+                    Text(text = "Descripción", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(text = it.description, style = MaterialTheme.typography.bodyMedium)
+
+                    InstructionsIngredientsSwitch()
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFDEDED)),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Red)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+
+                    Button(
+                        onClick = { /* Acción */ }, //TODO ir a compra cuando esté listo
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA000))
+                    ) {
+                        Text("Me lo merco")
+                    }
+                } ?: run {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            NavBar(navController = navController, currentRoute = "productDetail")
-        }
 
         BackButton(
             navController = navController,
@@ -122,6 +134,35 @@ fun ProductInfoCard(label: String, value: String) {
     Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = value, fontWeight = FontWeight.Bold)
         Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+    }
+}
+
+@Composable
+fun ProductImageWithBlur(imageUrl: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = rememberImagePainter(imageUrl),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .blur(30.dp),
+            contentScale = ContentScale.Crop
+        )
+
+        Image(
+            painter = rememberImagePainter(imageUrl),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .clip(RoundedCornerShape(16.dp)),
+            contentScale = ContentScale.Crop
+        )
     }
 }
 
@@ -163,9 +204,7 @@ fun InstructionsIngredientsSwitch() {
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clickable {
-                            selectedOption = option
-                        },
+                        .clickable { selectedOption = option },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -176,34 +215,5 @@ fun InstructionsIngredientsSwitch() {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ProductImageWithBlur(imageRes: Int) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(280.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .blur(30.dp),
-            contentScale = ContentScale.Crop
-        )
-
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth(0.7f)
-                .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop
-        )
     }
 }

@@ -16,7 +16,13 @@ fun AppNavigation() {
 
     NavHost(navController, startDestination = "home") {
         composable("home") { Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ }) }
-        composable("productDetail") { ProductDetailScreen(navController)}
+
+        composable("productDetail/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            println("🔍 Navegando a ProductDetail con ID: $productId")
+            ProductDetailScreen(navController, productId)
+        }
+
 
 // TODO: Connect
 //     NavHost(navController, startDestination = "login") {
