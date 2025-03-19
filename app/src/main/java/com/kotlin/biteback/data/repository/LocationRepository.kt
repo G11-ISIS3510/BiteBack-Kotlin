@@ -33,7 +33,7 @@ class LocationRepository(private val context: Context) {
     suspend fun getLastKnownLocation(): Location? {
         if (!hasLocationPermission()) return null
         return try {
-            fusedLocationClient.lastLocation.await() // Espera el resultado de manera asíncrona
+            fusedLocationClient.lastLocation.await()
         } catch (e: SecurityException) {
             null
         }

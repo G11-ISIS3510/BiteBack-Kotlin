@@ -16,9 +16,12 @@ class SearchBarViewModel : ViewModel() {
     private val repository = ProductWithBusinessRepository()
     private val _products = MutableStateFlow<List<ProductWithBusiness>>(emptyList())
     val products: StateFlow<List<ProductWithBusiness>> = _products
-
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+
+
+
 
     // Input Reactive Flow
     val filteredProducts = combine(_searchQuery, _products) { query, productList ->
@@ -40,6 +43,10 @@ class SearchBarViewModel : ViewModel() {
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun updateSearchQueryFromVoice(result: String) {
+        _searchQuery.value = result
     }
 
 

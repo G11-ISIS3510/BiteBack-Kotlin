@@ -29,13 +29,13 @@ fun ProductCard(
     category: String,
     onClick: () -> Unit
 ) {
-    var discountFormat: Int = (discount * 100).toInt()
-    var actualPrice: Int = (oldPrice * discount).toInt()
+    var discountFormat: Float = (discount / 100)
+    var actualPrice: Int = (oldPrice * discountFormat).toInt()
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
 
-        modifier = Modifier.height(250.dp).width(220.dp).padding(end = 16.dp).clickable { onClick() }
+        modifier = Modifier.height(250.dp).width(240.dp).padding(end = 16.dp).clickable { onClick() }
 
 
     ) {
@@ -66,7 +66,7 @@ fun ProductCard(
                         .padding(5.dp)
                 ) {
                     Text(
-                        text = "$discountFormat% off",
+                        text = "$discount% off",
                         color = Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
