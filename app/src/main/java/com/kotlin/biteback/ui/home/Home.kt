@@ -1,7 +1,17 @@
 package com.kotlin.biteback.ui.home
 
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,9 +34,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
+import android.Manifest
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kotlin.biteback.data.repository.LocationRepository
@@ -48,15 +64,20 @@ import com.kotlin.biteback.ui.components.ExploreCard
 import com.kotlin.biteback.ui.components.FoodCard
 import com.kotlin.biteback.ui.components.NavBar
 import com.kotlin.biteback.ui.components.ProductCard
-
 import com.kotlin.biteback.ui.locationText.LocationText
+import com.kotlin.biteback.viewModel.BusinessViewModel
+import com.kotlin.biteback.viewModel.BusinessViewModelFactory
+import com.kotlin.biteback.data.repository.BusinessRepository
+import java.util.Locale
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun Home(navController: NavController ,
          onNotificationClick: () -> Unit,
-         searchViewModel: SearchBarViewModel = viewModel()) {
+         searchViewModel: SearchBarViewModel = viewModel())
+{
 
     // HomeProductsFlows
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(ProductRepository()))
@@ -66,9 +87,15 @@ fun Home(navController: NavController ,
     // SearchBar Flows
     val searchText by searchViewModel.searchQuery.collectAsState()
     val filteredProducts by searchViewModel.filteredProducts.collectAsState()
+    // BusinessFLow
+    val businessViewModel: BusinessViewModel = viewModel(factory= BusinessViewModelFactory(BusinessRepository(locationRepository)))
+    val nearProducts by businessViewModel.nearbyProducts.collectAsState()
+
     LaunchedEffect(Unit) {
         searchViewModel.fetchProducts()
+        businessViewModel.fetchNearbyProducts(100.0)
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -121,18 +148,18 @@ fun Home(navController: NavController ,
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-
+                RequestAudioPermission(context)
                 // SearchBar
-
                 SearchBar(
                     searchText = searchText,
-                    onSearchTextChanged = { searchViewModel.updateSearchQuery(it) }
+                    onSearchTextChanged = { searchViewModel.updateSearchQuery(it) },
+                    onVoiceInput = { startVoiceRecognition(context, searchViewModel) }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Column {
-                    Text(text = "Resultados: ${filteredProducts.size}") // Para depuración
+                    Text(text = "Productos encontrados: ${filteredProducts.size}") // Para depuración
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -246,7 +273,7 @@ fun Home(navController: NavController ,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "El san bernardo",
+                    text = "Bogotá, Colombia",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -255,20 +282,25 @@ fun Home(navController: NavController ,
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()), // Permite desplazamiento horizontal
+                    .horizontalScroll(rememberScrollState())
             ) {
-                products.forEachIndexed { index, product ->
-                    ProductCard(
-                        imageRes = com.kotlin.biteback.R.drawable.steak_image,
-                        discount = (product.discount / 100).toFloat(),
-                        title = product.name,
-                        oldPrice = product.price.toInt(),
-                        time = "15 minutos",
-                        category = product.category,
-                        onClick = { navController.navigate("productDetail/${product.id}") }
-                    )
+                nearProducts.forEach { business ->
+                    val productsList = business["filteredProducts"] as? List<Map<String, Any>> ?: emptyList()
+                    productsList.forEach { product ->
+                        ProductCard(
+                            imageRes = com.kotlin.biteback.R.drawable.steak_image,
+                            discount = ((product["discount"] as? Double ?: (0.0 / 100))).toFloat(),
+                            title = product["name"] as? String ?: "Producto sin nombre",
+                            oldPrice = (product["price"] as? Double)?.toInt() ?: 0,
+                            time = "15 minutos",
+                            category = product["category"] as? String ?: "Sin categoría",
+                            onClick = {
+                                val productId = product["id"] as? String ?: ""
+                                navController.navigate("productDetail/$productId")
+                            }
+                        )
+                    }
                 }
-
             }
 
             // Food Recomendations
@@ -306,7 +338,7 @@ fun Home(navController: NavController ,
                     discount = 15.3,
                     location = "Puente Aranda",
                     price = 30000.0,
-                    expanded = false, // 🔥 Esto activa la versión alargada con el botón
+                    expanded = false,
                     onAddClick = { /* Acción cuando se presiona el botón */ }
                 )
             }
@@ -332,20 +364,15 @@ fun Home(navController: NavController ,
                     discount = 15.3,
                     location = "Puente Aranda",
                     price = 30000.0,
-                    expanded = false, // 🔥 Esto activa la versión alargada con el botón
+                    expanded = false,
                     onAddClick = { /* Acción cuando se presiona el botón */ }
                 )
             }
 
-
-
-//        Button(onClick = { navController.navigate("profile") }) {
-//            Text("Ir a Perfil")
-//        }
         }
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter) // ✅ Se fija en la parte inferior
+                .align(Alignment.BottomCenter)
         ) {
             NavBar(navController = navController, currentRoute = "home")
         }
@@ -354,35 +381,10 @@ fun Home(navController: NavController ,
 
 
 @Composable
-fun SearchBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFFF6F6F6))
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = "Buscar",
-                tint = Color.Gray
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Busca productos, comidas o bebidas",
-                color = Color.Gray
-            )
-        }
-    }
-}
-
-@Composable
 fun SearchBar(
     searchText: String,
-    onSearchTextChanged: (String) -> Unit
+    onSearchTextChanged: (String) -> Unit,
+    onVoiceInput: () -> Unit
 ) {
     TextField(
         value = searchText,
@@ -394,6 +396,15 @@ fun SearchBar(
                 contentDescription = "Buscar",
                 tint = Color.Gray
             )
+        },
+        trailingIcon = {
+            IconButton(onClick = { onVoiceInput() }) {
+                Icon(
+                    imageVector = Icons.Default.Phone,
+                    contentDescription = "Entrada de voz",
+                    tint = Color.Gray
+                )
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -412,5 +423,72 @@ fun SearchBar(
         ),
         singleLine = true
     )
+}
 
+// Speach Miro Recognizer
+private fun startVoiceRecognition(context: Context, searchViewModel: SearchBarViewModel) {
+    val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+        setRecognitionListener(object : RecognitionListener {
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                matches?.firstOrNull()?.let { spokenText ->
+                    searchViewModel.updateSearchQueryFromVoice(spokenText)
+                }
+            }
+            override fun onError(error: Int) {
+                Log.e("VoiceSearch", "Error en reconocimiento de voz: $error")
+            }
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+    }
+    val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+    }
+
+    speechRecognizer.setRecognitionListener(object : RecognitionListener {
+        override fun onResults(results: Bundle?) {
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            matches?.firstOrNull()?.let { spokenText ->
+                searchViewModel.updateSearchQueryFromVoice(spokenText) //
+            }
+        }
+
+        override fun onError(error: Int) {
+            Log.e("VoiceSearch", "Error en reconocimiento de voz: $error")
+        }
+
+        override fun onReadyForSpeech(params: Bundle?) {}
+        override fun onBeginningOfSpeech() {}
+        override fun onRmsChanged(rmsdB: Float) {}
+        override fun onBufferReceived(buffer: ByteArray?) {}
+        override fun onEndOfSpeech() {}
+        override fun onPartialResults(partialResults: Bundle?) {}
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    })
+
+    speechRecognizer.startListening(recognizerIntent)
+}
+
+@Composable
+fun RequestAudioPermission(context: Context) {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Permiso de micrófono denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
 }
