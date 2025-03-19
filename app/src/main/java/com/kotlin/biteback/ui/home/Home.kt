@@ -1,6 +1,8 @@
 package com.kotlin.biteback.ui.home
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -21,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -28,31 +31,49 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.kotlin.biteback.data.repository.LocationRepository
+import com.kotlin.biteback.data.repository.ProductRepository
 import com.kotlin.biteback.ui.components.BannerCard
 import com.kotlin.biteback.ui.components.CategoryCard
 import com.kotlin.biteback.ui.components.ExploreCard
 import com.kotlin.biteback.ui.components.FoodCard
 import com.kotlin.biteback.ui.components.ProductCard
 
+import com.kotlin.biteback.ui.locationText.LocationText
 
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun Home(navController: NavController ,
-         viewModel: HomeViewModel = viewModel<HomeViewModel>(),
-         onNotificationClick: () -> Unit) {
-    val message by viewModel.message.collectAsState()
+         onNotificationClick: () -> Unit,
+         searchViewModel: SearchBarViewModel = viewModel()) {
+
+    // HomeProductsFlows
+    val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(ProductRepository()))
+    val products by viewModel.products.collectAsState()
+    val context = LocalContext.current
+    val locationRepository = LocationRepository(context)
+    // SearchBar Flows
+    val searchText by searchViewModel.searchQuery.collectAsState()
+    val filteredProducts by searchViewModel.filteredProducts.collectAsState()
+    LaunchedEffect(Unit) {
+        searchViewModel.fetchProducts()
+    }
 
     Column (
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
 
         Column(
@@ -60,26 +81,14 @@ fun Home(navController: NavController ,
                 .fillMaxWidth()
 
         ) {
-            // Texto de saludo
-            Text(
-                text = "Hola Danny",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(0.dp))
 
+            Spacer(modifier = Modifier.height(0.dp))
             // Dirección y notificación
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Las crucetas",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                LocationText(locationRepository)
 
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -109,11 +118,41 @@ fun Home(navController: NavController ,
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            SearchBar()
+
+            // SearchBar
+
+            SearchBar(
+                searchText = searchText,
+                onSearchTextChanged = { searchViewModel.updateSearchQuery(it) }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column {
+                Text(text = "Resultados: ${filteredProducts.size}") // Para depuración
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                filteredProducts.forEach { product ->
+                    FoodCard(
+                        image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
+                        title = product.name,
+                        discount = product.discount,
+                        location = product.businessName,
+                        price = product.price,
+                        expanded = false,
+                        onAddClick = { /* Acción cuando se presiona el botón */ }
+                    )
+                }
+            }
         }
 
         // Banner Section
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         BannerCard()
 
         // Explore
@@ -149,8 +188,8 @@ fun Home(navController: NavController ,
         }
         // Category Section
         Spacer(modifier = Modifier.height(10.dp))
-        val categories = listOf("Donuts", "Café", "Hamburg")
-        var selectedCategory by remember { mutableStateOf("Donuts") }
+        var selectedCategory by remember { mutableStateOf("Postres") }
+        val uniqueCategories = products.map { it.category }.distinct()
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -177,9 +216,9 @@ fun Home(navController: NavController ,
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
         ) {
-            categories.forEach { category ->
+            uniqueCategories.forEach { category ->
                 CategoryCard(
-                    icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // Cambia según la categoría
+                    icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // Ajusta según la categoría
                     text = category,
                     isSelected = category == selectedCategory,
                     onClick = { selectedCategory = category }
@@ -212,14 +251,18 @@ fun Home(navController: NavController ,
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-        ){
-            ProductCard(imageRes = com.kotlin.biteback.R.drawable.steak_image, // Reemplaza con tu imagen
-                discount = 0.30f,
-                title = "Filete with papas.",
-                oldPrice = 25000,
-                time = "15 minutos",
-                category = "Paisas food")
+                .horizontalScroll(rememberScrollState()), // Permite desplazamiento horizontal
+        ) {
+            products.forEachIndexed { index, product ->
+                ProductCard(
+                    imageRes = com.kotlin.biteback.R.drawable.steak_image,
+                    discount = (product.discount / 100).toFloat(),
+                    title = product.name,
+                    oldPrice = product.price.toInt(),
+                    time = "15 minutos",
+                    category = product.category,
+                )
+            }
         }
 
         // Food Recomendations
@@ -252,10 +295,9 @@ fun Home(navController: NavController ,
         ) {
             FoodCard(
                 image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),            title = "Bandeja paisa",
-                discount = "15% DCTO",
+                discount = 15.3,
                 location = "Puente Aranda",
-                price = "$30.000",
-                oldPrice = "$40.000",
+                price = 30000.0,
                 expanded = false, // 🔥 Esto activa la versión alargada con el botón
                 onAddClick = { /* Acción cuando se presiona el botón */ }
             )
@@ -273,16 +315,15 @@ fun Home(navController: NavController ,
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+
                 .horizontalScroll(rememberScrollState())
         ) {
             FoodCard(
                 image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),            title = "Bandeja paisa",
-                discount = "15% DCTO",
+                discount = 15.3,
                 location = "Puente Aranda",
-                price = "$30.000",
-                oldPrice = "$40.000",
-                expanded = true, // 🔥 Esto activa la versión alargada con el botón
+                price = 30000.0,
+                expanded = false, // 🔥 Esto activa la versión alargada con el botón
                 onAddClick = { /* Acción cuando se presiona el botón */ }
             )
         }
@@ -322,3 +363,38 @@ fun SearchBar() {
     }
 }
 
+@Composable
+fun SearchBar(
+    searchText: String,
+    onSearchTextChanged: (String) -> Unit
+) {
+    TextField(
+        value = searchText,
+        onValueChange = { onSearchTextChanged(it) },
+        placeholder = { Text("Busca productos, comidas o bebidas", color = Color.Gray) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Buscar",
+                tint = Color.Gray
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, shape = RoundedCornerShape(24.dp))
+            .shadow(6.dp, shape = RoundedCornerShape(24.dp)),
+        colors = TextFieldDefaults.colors(
+            cursorColor = Color.Gray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+        singleLine = true
+    )
+
+}
