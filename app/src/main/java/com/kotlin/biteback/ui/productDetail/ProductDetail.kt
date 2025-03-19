@@ -32,6 +32,7 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
     val viewModel: ProductDetailViewModel = viewModel(factory = factory)
     val product by viewModel.product.collectAsState()
     var quantity by remember { mutableStateOf(1) }
+    val colors = MaterialTheme.colorScheme
 
     LaunchedEffect(productId) {
         viewModel.fetchProduct(productId)
@@ -56,7 +57,7 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                         Text(
                             text = "$${it.price.toInt()}",
                             style = MaterialTheme.typography.headlineSmall,
-                            color = Color(0xFFFFA000),
+                            color = colors.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -96,20 +97,20 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                     InstructionsIngredientsSwitch()
 
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFDEDED)),
+                        colors = CardDefaults.cardColors(containerColor = colors.surface),
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     ) {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Red)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall)
+                            Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall, color = colors.onBackground)
                         }
                     }
 
                     Button(
                         onClick = { /* Acción */ }, //TODO ir a compra cuando esté listo
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA000))
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text("Me lo merco")
                     }
@@ -172,6 +173,7 @@ fun InstructionsIngredientsSwitch() {
     var selectedOption by remember { mutableStateOf("Instrucciones") }
     val options = listOf("Instrucciones", "Ingredientes")
     val selectedIndex = options.indexOf(selectedOption)
+    val colors = MaterialTheme.colorScheme
 
     val animOffset by animateFloatAsState(
         targetValue = selectedIndex.toFloat(), label = ""
@@ -183,7 +185,7 @@ fun InstructionsIngredientsSwitch() {
             .height(50.dp)
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(25.dp))
-            .background(Color(0xFFF1F1F1))
+            .background(colors.surface)
     ) {
         val toggleWidth = maxWidth.value
         val indicatorWidth = toggleWidth / 2
@@ -195,7 +197,7 @@ fun InstructionsIngredientsSwitch() {
                 .width(indicatorWidth.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(25.dp))
-                .background(Color(0xFFFF9800))
+                .background(colors.primary)
         )
 
         Row(modifier = Modifier.fillMaxSize()) {
@@ -209,7 +211,7 @@ fun InstructionsIngredientsSwitch() {
                 ) {
                     Text(
                         text = option,
-                        color = if (selectedOption == option) Color.White else Color.Black,
+                        color = if (selectedOption == option) Color.White else Color.Gray,
                         fontWeight = FontWeight.Bold
                     )
                 }
