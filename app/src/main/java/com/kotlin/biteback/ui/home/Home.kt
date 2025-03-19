@@ -69,69 +69,230 @@ fun Home(navController: NavController ,
     LaunchedEffect(Unit) {
         searchViewModel.fetchProducts()
     }
-
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-
-
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp)
+                .padding(bottom = 100.dp)
         ) {
 
-            Spacer(modifier = Modifier.height(0.dp))
-            // Dirección y notificación
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+
+
             ) {
-                LocationText(locationRepository)
 
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Botón de notificaciones
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFFF8800))
-                        .clickable { onNotificationClick() },
-                    contentAlignment = Alignment.Center
+                Spacer(modifier = Modifier.height(0.dp))
+                // Dirección y notificación
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = "Notificaciones",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    LocationText(locationRepository)
 
-                    // Indicador de notificación (punto rojo)
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Botón de notificaciones
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
-                            .background(Color.Red, shape = CircleShape)
-                            .align(Alignment.TopEnd)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFF8800))
+                            .clickable { onNotificationClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = "Notificaciones",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        // Indicador de notificación (punto rojo)
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(Color.Red, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // SearchBar
+
+                SearchBar(
+                    searchText = searchText,
+                    onSearchTextChanged = { searchViewModel.updateSearchQuery(it) }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column {
+                    Text(text = "Resultados: ${filteredProducts.size}") // Para depuración
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    filteredProducts.forEach { product ->
+                        FoodCard(
+                            image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
+                            title = product.name,
+                            discount = product.discount,
+                            location = product.businessName,
+                            price = product.price,
+                            expanded = false,
+                            onAddClick = { navController.navigate("productDetail/${product.id}") }
+                        )
+                    }
+                }
+
+            }
+
+            // Banner Section
+            Spacer(modifier = Modifier.height(16.dp))
+            BannerCard()
+
+            // Explore
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                Arrangement.SpaceBetween
+            ) {
+                ExploreCard(
+                    title = "Restaurantes",
+                    subtitle = "Explorar más",
+                    actionText = "Explorar más →",
+                    imageRes = painterResource(id = com.kotlin.biteback.R.drawable.bowl_restaurant),
+                    backgroundColor = Color(0xFF03071E),
+                    titleColor = Color.White,
+                    subtitleColor = Color.LightGray,
+                    actionColor = Color(0xFFF77F00),
+                    onClick = { /* Acción cuando se presiona */ }
+                )
+
+                ExploreCard(
+                    title = "Supermercados",
+                    subtitle = "Explorar más",
+                    actionText = "Explorar más →",
+                    imageRes = painterResource(id = com.kotlin.biteback.R.drawable.green_vegetables),
+                    backgroundColor = Color(0xFFF2E8CF),
+                    titleColor = Color(0xFF386641),
+                    subtitleColor = Color.LightGray,
+                    actionColor = Color(0xFF2DC653),
+                    onClick = { /* Acción cuando se presiona */ }
+                )
+            }
+            // Category Section
+            Spacer(modifier = Modifier.height(10.dp))
+            var selectedCategory by remember { mutableStateOf("Postres") }
+            val uniqueCategories = products.map { it.category }.distinct()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Categorias",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Text(
+                    text = "Ver mas →",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF77F00)
+                )
+
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                uniqueCategories.forEach { category ->
+                    CategoryCard(
+                        icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // Ajusta según la categoría
+                        text = category,
+                        isSelected = category == selectedCategory,
+                        onClick = { selectedCategory = category }
                     )
                 }
             }
+            //Near Products Section
             Spacer(modifier = Modifier.height(10.dp))
-
-            // SearchBar
-
-            SearchBar(
-                searchText = searchText,
-                onSearchTextChanged = { searchViewModel.updateSearchQuery(it) }
+            Text(
+                text = "Productos cercanos",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.LocationOn,
+                    contentDescription = "Location",
+                    tint = Color(0xFFF77F00),
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "El san bernardo",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()), // Permite desplazamiento horizontal
+            ) {
+                products.forEachIndexed { index, product ->
+                    ProductCard(
+                        imageRes = com.kotlin.biteback.R.drawable.steak_image,
+                        discount = (product.discount / 100).toFloat(),
+                        title = product.name,
+                        oldPrice = product.price.toInt(),
+                        time = "15 minutos",
+                        category = product.category,
+                        onClick = { navController.navigate("productDetail/${product.id}") }
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            Column {
-                Text(text = "Resultados: ${filteredProducts.size}") // Para depuración
+            // Food Recomendations
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Recomendados",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Text(
+                    text = "Ver mas →",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF77F00)
+                )
+
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -139,206 +300,55 @@ fun Home(navController: NavController ,
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
             ) {
-                filteredProducts.forEach { product ->
-                    FoodCard(
-                        image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
-                        title = product.name,
-                        discount = product.discount,
-                        location = product.businessName,
-                        price = product.price,
-                        expanded = false,
-                        onAddClick = { navController.navigate("productDetail/${product.id}") }
-                    )
-                }
+                FoodCard(
+                    image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
+                    title = "Bandeja paisa",
+                    discount = 15.3,
+                    location = "Puente Aranda",
+                    price = 30000.0,
+                    expanded = false, // 🔥 Esto activa la versión alargada con el botón
+                    onAddClick = { /* Acción cuando se presiona el botón */ }
+                )
             }
 
-        }
 
-        // Banner Section
-        Spacer(modifier = Modifier.height(16.dp))
-        BannerCard()
-
-        // Explore
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            Arrangement.SpaceBetween
-        ) {
-            ExploreCard(
-                title = "Restaurantes",
-                subtitle = "Explorar más",
-                actionText = "Explorar más →",
-                imageRes = painterResource(id = com.kotlin.biteback.R.drawable.bowl_restaurant),
-                backgroundColor = Color(0xFF03071E),
-                titleColor = Color.White,
-                subtitleColor = Color.LightGray,
-                actionColor = Color(0xFFF77F00),
-                onClick = { /* Acción cuando se presiona */ }
-            )
-
-            ExploreCard(
-                title = "Supermercados",
-                subtitle = "Explorar más",
-                actionText = "Explorar más →",
-                imageRes = painterResource(id = com.kotlin.biteback.R.drawable.green_vegetables),
-                backgroundColor = Color(0xFFF2E8CF),
-                titleColor = Color(0xFF386641),
-                subtitleColor = Color.LightGray,
-                actionColor = Color(0xFF2DC653),
-                onClick = { /* Acción cuando se presiona */ }
-            )
-        }
-        // Category Section
-        Spacer(modifier = Modifier.height(10.dp))
-        var selectedCategory by remember { mutableStateOf("Postres") }
-        val uniqueCategories = products.map { it.category }.distinct()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-                Arrangement.SpaceBetween
-        ) {
+            // Food Categories
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Categorias",
+                text = "Categorias varias",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
 
-            Text(
-                text = "Ver mas →",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFF77F00)
-            )
-
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-        ) {
-            uniqueCategories.forEach { category ->
-                CategoryCard(
-                    icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // Ajusta según la categoría
-                    text = category,
-                    isSelected = category == selectedCategory,
-                    onClick = { selectedCategory = category }
-                )
-            }
-        }
-        //Near Products Section
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "Productos cercanos",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Filled.LocationOn,
-                contentDescription = "Location",
-                tint = Color(0xFFF77F00),
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "El san bernardo",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()), // Permite desplazamiento horizontal
-        ) {
-            products.forEachIndexed { index, product ->
-                ProductCard(
-                    imageRes = com.kotlin.biteback.R.drawable.steak_image,
-                    discount = (product.discount / 100).toFloat(),
-                    title = product.name,
-                    oldPrice = product.price.toInt(),
-                    time = "15 minutos",
-                    category = product.category,
-                    onClick = { navController.navigate("productDetail/${product.id}") }
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                FoodCard(
+                    image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
+                    title = "Bandeja paisa",
+                    discount = 15.3,
+                    location = "Puente Aranda",
+                    price = 30000.0,
+                    expanded = false, // 🔥 Esto activa la versión alargada con el botón
+                    onAddClick = { /* Acción cuando se presiona el botón */ }
                 )
             }
 
-        }
 
-        // Food Recomendations
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Recomendados",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Text(
-                text = "Ver mas →",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFF77F00)
-            )
-
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-        ) {
-            FoodCard(
-                image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),            title = "Bandeja paisa",
-                discount = 15.3,
-                location = "Puente Aranda",
-                price = 30000.0,
-                expanded = false, // 🔥 Esto activa la versión alargada con el botón
-                onAddClick = { /* Acción cuando se presiona el botón */ }
-            )
-        }
-
-
-        // Food Categories
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = "Categorias varias",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-
-                .horizontalScroll(rememberScrollState())
-        ) {
-            FoodCard(
-                image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),            title = "Bandeja paisa",
-                discount = 15.3,
-                location = "Puente Aranda",
-                price = 30000.0,
-                expanded = false, // 🔥 Esto activa la versión alargada con el botón
-                onAddClick = { /* Acción cuando se presiona el botón */ }
-            )
-        }
-
-        NavBar(navController = navController, currentRoute = "home") //TODO Acomodar correctamente
 
 //        Button(onClick = { navController.navigate("profile") }) {
 //            Text("Ir a Perfil")
 //        }
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter) // ✅ Se fija en la parte inferior
+        ) {
+            NavBar(navController = navController, currentRoute = "home")
+        }
     }
 }
 
