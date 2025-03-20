@@ -43,14 +43,8 @@ class MainActivity : ComponentActivity() {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Column (verticalArrangement = Arrangement.Center,
         modifier = modifier) {
-
         AppNavigation()
 
-        // Texto de prueba
-        Text(
-            text = "Alo $name!",
-            modifier = modifier
-        )
     }
 
 }
