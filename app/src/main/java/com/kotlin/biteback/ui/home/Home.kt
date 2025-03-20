@@ -202,7 +202,7 @@ fun Home(navController: NavController ,
                     titleColor = Color.White,
                     subtitleColor = Color.LightGray,
                     actionColor = Color(0xFFF77F00),
-                    onClick = { /* Acción cuando se presiona */ }
+                    onClick = { navController.navigate("restaurantReviews") }
                 )
 
                 ExploreCard(

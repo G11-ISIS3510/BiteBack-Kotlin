@@ -7,6 +7,7 @@ import androidx.navigation.compose.*
 import com.kotlin.biteback.ui.home.Home
 import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
+import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
 
 
 @Composable
@@ -21,6 +22,10 @@ fun AppNavigation() {
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
             println("🔍 Navegando a ProductDetail con ID: $productId")
             ProductDetailScreen(navController, productId)
+        }
+
+        composable("restaurantReviews") {
+            RestaurantReviews(navController)
         }
 
 

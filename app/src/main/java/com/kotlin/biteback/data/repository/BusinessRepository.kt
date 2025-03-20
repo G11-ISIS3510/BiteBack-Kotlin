@@ -10,7 +10,6 @@ class BusinessRepository(private val locationRepo: LocationRepository) {
     private val db = FirebaseFirestore.getInstance()
     private val businessCollection = db.collection("business")
 
-
     suspend fun getNearbyProducts(maxDistanceKm: Double): List<Map<String, Any>> {
         val userLocation = locationRepo.getLastKnownLocation() ?: return emptyList()
         val userLat = userLocation.latitude
