@@ -175,7 +175,8 @@ fun Home(navController: NavController ,
                             location = product.businessName,
                             price = product.price,
                             expanded = false,
-                            onAddClick = { navController.navigate("productDetail/${product.id}") }
+                            onAddClick = {
+                                navController.navigate("productDetail/${product.id}") }
                         )
                     }
                 }
@@ -202,7 +203,7 @@ fun Home(navController: NavController ,
                     titleColor = Color.White,
                     subtitleColor = Color.LightGray,
                     actionColor = Color(0xFFF77F00),
-                    onClick = { navController.navigate("restaurantReviews") }
+                    onClick = { }// navController.navigate("restaurantReviews") }
                 )
 
                 ExploreCard(
