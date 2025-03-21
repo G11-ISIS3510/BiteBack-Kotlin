@@ -30,12 +30,14 @@ class AuthRepository {
     suspend fun signInWithGoogle(account: GoogleSignInAccount): Boolean {
         return try {
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-            auth.signInWithCredential(credential).await()
-            true
+            val result = auth.signInWithCredential(credential).await()
+            result.user != null
         } catch (e: Exception) {
+            println("Error en autenticación con Google: ${e.message}")
             false
         }
     }
+
 
     fun logout() {
         auth.signOut()
