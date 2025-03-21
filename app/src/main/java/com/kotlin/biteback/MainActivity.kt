@@ -30,29 +30,26 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        context = this  // PASAMOS EL CONTEXTO AQUÍ
                     )
-
                 }
             }
         }
     }
 }
-
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Column (verticalArrangement = Arrangement.Center,
-        modifier = modifier) {
-        AppNavigation()
+fun Greeting(name: String, modifier: Modifier = Modifier, context: ComponentActivity) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        AppNavigation(context)
 
-    }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BiteBackTheme {
-        Greeting("Android")
+        // Texto de prueba
+        Text(
+            text = "Alo $name!",
+            modifier = modifier
+        )
     }
 }
