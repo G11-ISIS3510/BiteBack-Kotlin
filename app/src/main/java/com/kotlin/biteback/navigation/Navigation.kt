@@ -6,7 +6,7 @@ import androidx.navigation.compose.*
 import com.kotlin.biteback.ui.home.Home
 import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
-import com.kotlin.biteback.ui.register.Register // Importa la pantalla de registro
+import com.kotlin.biteback.ui.register.Register
 import android.content.Context
 
 @Composable
@@ -33,4 +33,3 @@ fun AppNavigation(context: Context) {
         }
     }
 }
-

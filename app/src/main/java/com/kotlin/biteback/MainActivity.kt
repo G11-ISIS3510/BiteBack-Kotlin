@@ -38,7 +38,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier, context: ComponentActivity) {
     Column(
