@@ -1,34 +1,36 @@
 package com.kotlin.biteback.navigation
 
-
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
 import com.kotlin.biteback.ui.home.Home
 import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
-
+import com.kotlin.biteback.ui.register.Register // Importa la pantalla de registro
+import android.content.Context
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(context: Context) {
     val navController = rememberNavController()
 
+    NavHost(navController, startDestination = "login") {
+        // Pantalla de Login
+        composable("login") { Login(navController, context) }
 
-    NavHost(navController, startDestination = "home") {
-        composable("home") { Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ }) }
+        // **Pantalla de Registro** (La agregamos aquí)
+        composable("register") { Register(navController, context) }
 
+        // Pantalla de Home (Solo accesible después de iniciar sesión)
+        composable("home") {
+            Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ })
+        }
+
+        // Pantalla de Detalle del Producto
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
             println("🔍 Navegando a ProductDetail con ID: $productId")
             ProductDetailScreen(navController, productId)
         }
-
-
-// TODO: Connect
-//     NavHost(navController, startDestination = "login") {
-//         composable("login") { Login(navController) }
-//         compoable("home") { Home(navController) }
-
-
     }
 }
+

@@ -1,6 +1,11 @@
 package com.kotlin.biteback.ui.login
 
+import android.content.Context
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,29 +25,54 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.res.painterResource
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.kotlin.biteback.R
-import androidx.compose.foundation.Image
+import com.kotlin.biteback.data.repositories.AuthRepository
+import androidx.compose.foundation.BorderStroke
 
 @Composable
-fun Login(navController: NavController, viewModel: LoginViewModel = viewModel()) {
-    var isRegisterMode by remember { mutableStateOf(false) } // Controls Register vs Login view
-    var isEmailMode by remember { mutableStateOf(false) } // Default to phone login
-    var phoneNumber by remember { mutableStateOf("") }
+fun Login(navController: NavController, context: Context) {
+    val authRepository = remember { AuthRepository() }
+    val viewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(authRepository))
+    val authState by viewModel.authState.collectAsState()
+
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val googleSignInClient: GoogleSignInClient = remember {
+        GoogleSignIn.getClient(
+            context,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("YOUR_WEB_CLIENT_ID") // Reemplaza con tu Client ID de Firebase
+                .requestEmail()
+                .build()
+        )
+    }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            viewModel.signInWithGoogle(account, navController)
+        } catch (e: ApiException) {
+            println("Error en Google Sign-In: ${e.message}")
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Force White Background
+            .background(Color.White)
             .padding(20.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // LOGO & Branding
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // LOGO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -51,9 +82,7 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                     contentDescription = "Biteback Logo",
                     modifier = Modifier.size(50.dp)
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Text(
                     "Biteback",
                     fontSize = 32.sp,
@@ -66,17 +95,17 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Register & Login Toggle Buttons
+            // Botones de Registro e Inicio de Sesión
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
-                    onClick = { isRegisterMode = true },
+                    onClick = { navController.navigate("register") },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isRegisterMode) Color(0xFFFF9800) else Color.White,
-                        contentColor = if (isRegisterMode) Color.White else Color.Black
+                        containerColor = Color.White,
+                        contentColor = Color.Black
                     ),
                     border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
@@ -89,11 +118,11 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                 Spacer(modifier = Modifier.width(10.dp))
 
                 Button(
-                    onClick = { isRegisterMode = false },
+                    onClick = { },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isRegisterMode) Color(0xFFFF9800) else Color.White,
-                        contentColor = if (!isRegisterMode) Color.White else Color.Black
+                        containerColor = Color(0xFFFF9800),
+                        contentColor = Color.White
                     ),
                     border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
@@ -105,14 +134,13 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-
             Text("Iniciar sesión con:", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Social Login Buttons
+            // Botones de Google y Email
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Button(
-                    onClick = { /* Google Sign-In */ },
+                    onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
@@ -127,20 +155,20 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                 }
 
                 Button(
-                    onClick = { isEmailMode = !isEmailMode },
+                    onClick = { },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
                 ) {
-                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Correo Electrónico")
+                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Correo Electrónico", color = Color.White)
+                    Text("Email", color = Color.White)
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-
+            // Divider
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -152,15 +180,13 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
 
             Spacer(modifier = Modifier.height(10.dp))
 
-
+            // Campos de entrada de correo y contraseña
             OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                label = { Text("Número de teléfono") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                shape = RoundedCornerShape(15.dp),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo Electrónico") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
@@ -168,18 +194,29 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(15.dp),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Submit Button
+            // Estado de autenticación
+            when (authState) {
+                is AuthState.Loading -> CircularProgressIndicator()
+                is AuthState.Error -> Text(
+                    text = (authState as AuthState.Error).message,
+                    color = Color.Red
+                )
+                is AuthState.Success -> {
+                    LaunchedEffect(Unit) {
+                        navController.navigate("home")
+                    }
+                }
+                else -> {}
+            }
+
+            // Botón de Inicio de Sesión
             Button(
-                onClick = {
-                    navController.navigate("home")
-                },
+                onClick = { viewModel.loginWithEmail(email, password) },
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier
@@ -190,10 +227,9 @@ fun Login(navController: NavController, viewModel: LoginViewModel = viewModel())
                 Text("Iniciar sesión →", color = Color.White, fontSize = 18.sp)
             }
 
-
             Spacer(modifier = Modifier.height(10.dp))
 
-
+            // Olvidé mi contraseña
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
