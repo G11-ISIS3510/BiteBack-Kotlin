@@ -92,7 +92,7 @@ fun Login(navController: NavController, context: Context) {
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Más baratos, más accesibles.", fontSize = 16.sp, color = colors.onBackground)
+            Text("Más baratos, más accesibles.", fontSize = 16.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -106,9 +106,9 @@ fun Login(navController: NavController, context: Context) {
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.background,
-                        contentColor = colors.onBackground
+                        contentColor = Color.Black
                     ),
-                    border = BorderStroke(1.dp, colors.onBackground),
+                    border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
                         .padding(2.dp)
                         .weight(1f)
@@ -125,7 +125,7 @@ fun Login(navController: NavController, context: Context) {
                         containerColor = Color(0xFFFF9800),
                         contentColor = Color.White
                     ),
-                    border = BorderStroke(1.dp, colors.onBackground),
+                    border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
                         .padding(2.dp)
                         .weight(1f)
@@ -135,22 +135,15 @@ fun Login(navController: NavController, context: Context) {
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-
+            Text("Iniciar sesión con:", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(10.dp))
-            // Línea divisoria
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Iniciar Sesión con: ", color = colors.onBackground)
-            }
 
             // Botones de Google y Email
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Button(
                     onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
                     shape = RoundedCornerShape(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.onSurface.copy(alpha = 0.1f)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
                 ) {
                     Image(
@@ -159,32 +152,34 @@ fun Login(navController: NavController, context: Context) {
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Google", color = colors.onBackground)
+                    Text("Google")
                 }
 
                 Button(
                     onClick = { },
                     shape = RoundedCornerShape(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.onBackground),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                     modifier = Modifier.weight(1f).padding(5.dp)
                 ) {
-                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Email", tint = colors.background)
+                    Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Email", color = colors.background)
+                    Text("Email", color = Color.White)
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Línea divisoria
+            // Divider
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = colors.onBackground)
-                Text("  o  ", color = colors.onBackground)
-                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = colors.onBackground)
+                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
+                Text("  o  ", color = Color.Gray)
+                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Campos de entrada de correo y contraseña
             OutlinedTextField(
@@ -201,13 +196,14 @@ fun Login(navController: NavController, context: Context) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña", color = colors.onBackground) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                textStyle = LocalTextStyle.current.copy(color = colors.onBackground),
+                textStyle = LocalTextStyle.current.copy(color = colors.onBackground), // ✅ Cambia el color del texto
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = colors.primary,
                     unfocusedBorderColor = colors.onBackground.copy(alpha = 0.6f),
@@ -216,7 +212,23 @@ fun Login(navController: NavController, context: Context) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+
             Spacer(modifier = Modifier.height(20.dp))
+
+            // Estado de autenticación
+            when (authState) {
+                is AuthState.Loading -> CircularProgressIndicator()
+                is AuthState.Error -> Text(
+                    text = (authState as AuthState.Error).message,
+                    color = Color.Red
+                )
+                is AuthState.Success -> {
+                    LaunchedEffect(Unit) {
+                        navController.navigate("home")
+                    }
+                }
+                else -> {}
+            }
 
             // Botón de Inicio de Sesión
             Button(
@@ -238,7 +250,7 @@ fun Login(navController: NavController, context: Context) {
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Olvidé mi contraseña. ", color = colors.onBackground)
+                Text("Olvidé mi contraseña. ", color = Color.Gray)
                 Text(
                     "Recuperarla",
                     color = Color(0xFFFF9800),
@@ -249,4 +261,3 @@ fun Login(navController: NavController, context: Context) {
         }
     }
 }
-
