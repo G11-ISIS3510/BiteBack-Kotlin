@@ -46,7 +46,7 @@ fun FoodCard(
     modifier: Modifier = Modifier
 ) {
 
-    var actualPrice: Int = (price * (discount/100)).toInt()
+    var actualPrice: Int = (price * (1-(discount/100))).toInt()
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -54,7 +54,7 @@ fun FoodCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = modifier
             .then(if (expanded) Modifier.fillMaxWidth() else Modifier.width(270.dp))
-            .height(120.dp).padding(end = 16.dp).clickable { /* Acción al hacer clic */ }
+            .height(120.dp).padding(end = 16.dp).clickable { onAddClick() }
 
     ) {
         Row(

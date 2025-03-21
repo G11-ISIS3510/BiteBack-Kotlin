@@ -54,19 +54,22 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                     )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        val discountedPrice = (it.price * (1 - (it.discount / 100))).toInt()
+
                         Text(
-                            text = "$${it.price.toInt()}",
+                            text = "$$discountedPrice",
                             style = MaterialTheme.typography.headlineSmall,
                             color = colors.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$${(it.price / (1 - (it.discount / 100))).toInt()}",
+                            text = "$${it.price.toInt()}", // ✅ Precio original (tachado)
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.Gray,
                             textDecoration = TextDecoration.LineThrough
                         )
+
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
