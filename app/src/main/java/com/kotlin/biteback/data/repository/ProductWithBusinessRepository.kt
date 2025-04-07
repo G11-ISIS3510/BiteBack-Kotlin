@@ -38,7 +38,7 @@ class ProductWithBusinessRepository {
                         description = document.getString("description") ?: "",
                         discount = document.getDouble("discount") ?: 0.0,
                         expirationDate = document.getTimestamp("expirationDate")?.toDate()?.time ?: 0L,
-                        id = document.getString("id") ?: "",
+                        id = document.id,
                         image = document.getString("image") ?: "",
                         name = document.getString("name") ?: "",
                         price = document.getDouble("price") ?: 0.0

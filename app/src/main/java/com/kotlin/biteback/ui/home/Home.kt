@@ -93,7 +93,7 @@ fun Home(navController: NavController ,
 
     LaunchedEffect(Unit) {
         searchViewModel.fetchProducts()
-        businessViewModel.fetchNearbyProducts(100.0)
+        businessViewModel.fetchNearbyProducts(5.0)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -169,14 +169,16 @@ fun Home(navController: NavController ,
                 ) {
                     filteredProducts.forEach { product ->
                         FoodCard(
-                            image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
+                            image = product.image,
                             title = product.name,
                             discount = product.discount,
                             location = product.businessName,
                             price = product.price,
                             expanded = false,
                             onAddClick = {
-                                navController.navigate("productDetail/${product.id}") }
+                                val productId = product.id
+                                navController.navigate("productDetail/$productId")
+                            }
                         )
                     }
                 }
@@ -203,7 +205,7 @@ fun Home(navController: NavController ,
                     titleColor = Color.White,
                     subtitleColor = Color.LightGray,
                     actionColor = Color(0xFFF77F00),
-                    onClick = { }// navController.navigate("restaurantReviews") }
+                    onClick = { navController.navigate("restaurantReviews") }
                 )
 
                 ExploreCard(
@@ -289,10 +291,10 @@ fun Home(navController: NavController ,
                     val productsList = business["filteredProducts"] as? List<Map<String, Any>> ?: emptyList()
                     productsList.forEach { product ->
                         ProductCard(
-                            imageRes = com.kotlin.biteback.R.drawable.steak_image,
-                            discount = ((product["discount"] as? Double ?: (0.0 / 100))).toFloat(),
+                            imageRes = (product["image"] as? String) ?: "https://imgix.ranker.com/user_node_img/50105/1002095730/original/1002095730-photo-u1?auto=format&q=60&fit=crop&fm=pjpg&dpr=2&w=355",
+                            discount = ((product["discount"] as? Number ?: (0.0 / 100))).toFloat(),
                             title = product["name"] as? String ?: "Producto sin nombre",
-                            oldPrice = (product["price"] as? Double)?.toInt() ?: 0,
+                            oldPrice = (product["price"] as? Number)?.toInt() ?: 0,
                             time = "15 minutos",
                             category = product["category"] as? String ?: "Sin categoría",
                             onClick = {
@@ -333,15 +335,19 @@ fun Home(navController: NavController ,
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
             ) {
-                FoodCard(
-                    image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
-                    title = "Bandeja paisa",
-                    discount = 15.3,
-                    location = "Puente Aranda",
-                    price = 30000.0,
-                    expanded = false,
-                    onAddClick = { /* Acción cuando se presiona el botón */ }
-                )
+                filteredProducts.shuffled().take(3).forEach { product ->
+                    FoodCard(
+                        image = product.image,
+                        title = product.name,
+                        discount = product.discount,
+                        location = product.businessName,
+                        price = product.price,
+                        expanded = false,
+                        onAddClick = {
+                            navController.navigate("productDetail/${product.id}")
+                        }
+                    )
+                }
             }
 
 
@@ -359,15 +365,19 @@ fun Home(navController: NavController ,
 
                     .horizontalScroll(rememberScrollState())
             ) {
-                FoodCard(
-                    image = painterResource(id = com.kotlin.biteback.R.drawable.burger_product),
-                    title = "Bandeja paisa",
-                    discount = 15.3,
-                    location = "Puente Aranda",
-                    price = 30000.0,
-                    expanded = false,
-                    onAddClick = { /* Acción cuando se presiona el botón */ }
-                )
+                filteredProducts.shuffled().take(3).forEach { product ->
+                    FoodCard(
+                        image = product.image,
+                        title = product.name,
+                        discount = product.discount,
+                        location = product.businessName,
+                        price = product.price,
+                        expanded = false,
+                        onAddClick = {
+                            navController.navigate("productDetail/${product.id}")
+                        }
+                    )
+                }
             }
 
         }

@@ -32,6 +32,8 @@ import com.google.android.gms.common.api.ApiException
 import com.kotlin.biteback.R
 import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun Login(navController: NavController, context: Context) {
@@ -72,8 +74,14 @@ fun Login(navController: NavController, context: Context) {
             .padding(20.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // LOGO
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+        // LOGO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -106,7 +114,7 @@ fun Login(navController: NavController, context: Context) {
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.background,
-                        contentColor = Color.Black
+                        contentColor = colors.onBackground
                     ),
                     border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier

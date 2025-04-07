@@ -16,12 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.theme.RedAccent
 
 
 @Composable
 fun ProductCard(
-    imageRes: Int,
+    imageRes: String,
     discount: Float,
     title: String,
     oldPrice: Int,
@@ -43,7 +44,7 @@ fun ProductCard(
             modifier = Modifier.fillMaxSize()
         ) {
             Image(
-                painter = painterResource(id = imageRes),
+                painter = rememberImagePainter(imageRes),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
