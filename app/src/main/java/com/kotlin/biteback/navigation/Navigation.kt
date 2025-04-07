@@ -8,6 +8,7 @@ import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
 import com.kotlin.biteback.ui.register.Register
 import android.content.Context
+import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
 
 @Composable
 fun AppNavigation(context: Context) {
@@ -24,6 +25,10 @@ fun AppNavigation(context: Context) {
         composable("home") {
             Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ })
         }
+
+        composable("restaurantReviews") {
+            RestaurantReviews(navController)
+            }
 
         // Pantalla de Detalle del Producto
         composable("productDetail/{productId}") { backStackEntry ->
