@@ -35,6 +35,7 @@ fun NavBar(navController: NavController, currentRoute: String) {
     )
 
     val colors = MaterialTheme.colorScheme
+    val validRoutes = listOf("home")
 
     Box(
         modifier = Modifier
@@ -58,10 +59,15 @@ fun NavBar(navController: NavController, currentRoute: String) {
             ) {
                 items.forEach { item ->
                     val isSelected = item.route == currentRoute
+                    val isEnabled = item.route in validRoutes
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clickable { if (!isSelected) navController.navigate(item.route) }
+                            .then(
+                                if (isEnabled && !isSelected) {
+                                    Modifier.clickable { navController.navigate(item.route) }
+                                } else Modifier
+                            )
                             .padding(8.dp)
                     ) {
                         Icon(
