@@ -400,7 +400,7 @@ fun SearchBar(
     TextField(
         value = searchText,
         onValueChange = { onSearchTextChanged(it) },
-        placeholder = { Text("Busca productos, comidas o bebidas", color = Color.Gray) },
+        placeholder = { Text("Busca productos:", color = Color.Gray) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
