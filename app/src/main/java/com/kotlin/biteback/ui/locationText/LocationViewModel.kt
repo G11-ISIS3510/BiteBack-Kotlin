@@ -1,14 +1,12 @@
-package com.kotlin.biteback.viewModel
+package com.kotlin.biteback.ui.locationText
 
-
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kotlin.biteback.data.repository.LocationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import android.location.Location
-
 
 class LocationViewModel(private val locationRepository: LocationRepository) : ViewModel() {
 

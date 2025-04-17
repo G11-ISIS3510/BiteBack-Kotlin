@@ -3,7 +3,7 @@ package com.kotlin.biteback.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.kotlin.biteback.data.repository.LocationRepository
-import com.kotlin.biteback.viewModel.LocationViewModel
+import com.kotlin.biteback.ui.locationText.LocationViewModel
 
 class LocationViewModelFactory(private val repository: LocationRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
