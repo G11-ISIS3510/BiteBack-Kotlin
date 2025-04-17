@@ -17,7 +17,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.kotlin.biteback.data.repository.LocationRepository
 import com.kotlin.biteback.ui.home.LocationViewModelFactory
-import com.kotlin.biteback.viewModel.LocationViewModel
+import com.kotlin.biteback.ui.locationText.LocationViewModel
 import android.Manifest
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

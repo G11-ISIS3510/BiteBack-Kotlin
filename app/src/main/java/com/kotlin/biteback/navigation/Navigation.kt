@@ -8,13 +8,16 @@ import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
 import com.kotlin.biteback.ui.register.Register
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AppNavigation(context: Context) {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "home") {
         // Pantalla de Login
         composable("login") { Login(navController, context) }
 
