@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,9 +36,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Search
 import android.Manifest
-import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -93,7 +90,7 @@ fun Home(navController: NavController ,
 
     LaunchedEffect(Unit) {
         searchViewModel.fetchProducts()
-        businessViewModel.fetchNearbyProducts(5.0)
+        businessViewModel.fetchNearbyProducts(100.0)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

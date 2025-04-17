@@ -2,7 +2,6 @@ package com.kotlin.biteback.ui.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kotlin.biteback.data.model.ProductWithBusiness
 import com.kotlin.biteback.data.repository.ProductWithBusinessRepository
@@ -37,10 +36,13 @@ class SearchBarViewModel(application: Application) : AndroidViewModel(applicatio
                 val list = repo.fetchAndCacheProducts()
                 _products.value = list
             } else {
-                // OFFLINE: read data from cahce
+                // OFFLINE: read data from cache
                 repo.getCachedProducts().collect {
+                    println("Reading cache data from search products ")
                     _products.value = it
                 }
+
+
             }
         }
     }
