@@ -49,7 +49,7 @@ fun Login(navController: NavController, context: Context) {
         GoogleSignIn.getClient(
             context,
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("YOUR_WEB_CLIENT_ID") // Reemplaza con tu Client ID de Firebase
+                .requestIdToken("685056619394-9gslsqdhe5rhsrd68fsq083enl1s0gvg.apps.googleusercontent.com")
                 .requestEmail()
                 .build()
         )
