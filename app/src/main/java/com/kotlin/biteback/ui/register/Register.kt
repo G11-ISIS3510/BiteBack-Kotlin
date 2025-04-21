@@ -25,6 +25,8 @@ import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.kotlin.biteback.utils.NetworkUtils
+
 
 @Composable
 fun Register(navController: NavController, context: Context) {
@@ -183,12 +185,23 @@ fun Register(navController: NavController, context: Context) {
             // Botón de registro
             Button(
                 onClick = {
-                    if (password == confirmPassword) {
-                        viewModel.registerWithEmail(email, password, navController)
-                    } else {
-                        errorMessage = "Las contraseñas no coinciden"
+                    when {
+                        password != confirmPassword -> {
+                            errorMessage = "Las contraseñas no coinciden"
+                        }
+                        password.length < 6 -> {
+                            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+                        }
+                        !NetworkUtils.isConnected(context) -> {
+                            errorMessage = "Se requiere conexión a Internet para registrarse"
+                        }
+                        else -> {
+                            errorMessage = "" // limpia error si todo está bien
+                            viewModel.registerWithEmail(email, password, confirmPassword, context, navController)
+                        }
                     }
-                },
+                }
+                ,
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier
