@@ -23,6 +23,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kotlin.biteback.navigation.AppNavigation
 import com.kotlin.biteback.ui.theme.BiteBackTheme
+import com.google.firebase.auth.FirebaseAuth
+
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -43,29 +46,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BiteBackTheme {
+                val user = FirebaseAuth.getInstance().currentUser
+                //val startDestination = if (user != null) "home" else "login"
+                val startDestination = "login"
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding),
-                        context = this
-                    )
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        AppNavigation(context = this@MainActivity, startDestination = startDestination)
+                    }
                 }
             }
         }
-    }
-}
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier, context: ComponentActivity) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-    ) {
-        AppNavigation(context)
 
-        Text(
-            text = "Alo $name!",
-            modifier = modifier
-        )
     }
+
 }

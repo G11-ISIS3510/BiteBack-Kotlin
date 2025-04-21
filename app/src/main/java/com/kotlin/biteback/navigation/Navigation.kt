@@ -11,33 +11,26 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
+import com.google.firebase.auth.FirebaseAuth
+
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
-fun AppNavigation(context: Context) {
+fun AppNavigation(context: Context, startDestination: String) {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "home") {
-        // Pantalla de Login
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") { Login(navController, context) }
-
-        // **Pantalla de Registro** (La agregamos aquí)
         composable("register") { Register(navController, context) }
-
-        // Pantalla de Home (Solo accesible después de iniciar sesión)
         composable("home") {
-            Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ })
+            Home(navController, onNotificationClick = { /* acción */ })
         }
-
-        composable("restaurantReviews") {
-            RestaurantReviews(navController)
-            }
-
-        // Pantalla de Detalle del Producto
+        composable("restaurantReviews") { RestaurantReviews(navController) }
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
-            println("🔍 Navegando a ProductDetail con ID: $productId")
             ProductDetailScreen(navController, productId)
         }
     }
 }
+

@@ -1,7 +1,6 @@
 package com.kotlin.biteback.ui.login
 
 import android.content.Context
-import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -240,7 +239,7 @@ fun Login(navController: NavController, context: Context) {
 
             // Botón de Inicio de Sesión
             Button(
-                onClick = { viewModel.loginWithEmail(email, password) },
+                onClick = { viewModel.loginWithEmail(email, password, context) },
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier
