@@ -43,7 +43,7 @@ fun FoodCard(
     location: String,
     price: Double,
     expanded: Boolean = false,
-    onAddClick: () -> Unit,
+    onAddClick:  () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
