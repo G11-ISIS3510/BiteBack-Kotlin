@@ -1,5 +1,9 @@
 package com.kotlin.biteback.data.model
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class ProductWithBusiness(
     val businessId: String = "",
     val businessName: String = "",

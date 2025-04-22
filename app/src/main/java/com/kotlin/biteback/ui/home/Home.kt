@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -65,9 +66,12 @@ import com.kotlin.biteback.ui.locationText.LocationText
 import com.kotlin.biteback.viewModel.BusinessViewModel
 import com.kotlin.biteback.viewModel.BusinessViewModelFactory
 import com.kotlin.biteback.data.repository.BusinessRepository
+import com.kotlin.biteback.utils.DataStoreManager
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
@@ -84,6 +88,9 @@ fun Home(navController: NavController ,
     // SearchBar Flows
     val searchText by searchViewModel.searchQuery.collectAsState()
     val filteredProducts by searchViewModel.filteredProducts.collectAsState()
+    // Recent viewed flow
+    val recentProducts by searchViewModel.recentProducts.collectAsState()
+
     // BusinessFLow
     val businessViewModel: BusinessViewModel = viewModel(factory= BusinessViewModelFactory(BusinessRepository(locationRepository)))
     val nearProducts by businessViewModel.nearbyProducts.collectAsState()
@@ -91,6 +98,7 @@ fun Home(navController: NavController ,
     LaunchedEffect(Unit) {
         searchViewModel.fetchProducts()
         businessViewModel.fetchNearbyProducts(100.0)
+        searchViewModel.fetchRecentProducts()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -154,7 +162,7 @@ fun Home(navController: NavController ,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-
+                // Productos encontrados
                 Column {
                     Text(text = "Productos encontrados: ${filteredProducts.size}") // Para depuración
                 }
@@ -173,6 +181,8 @@ fun Home(navController: NavController ,
                             price = product.price,
                             expanded = false,
                             onAddClick = {
+                                searchViewModel.onProductClicked(product)
+
                                 val productId = product.id
                                 navController.navigate("productDetail/$productId")
                             }
@@ -312,7 +322,7 @@ fun Home(navController: NavController ,
                 Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Recomendados",
+                    text = "Explorados recientemente ",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -332,7 +342,7 @@ fun Home(navController: NavController ,
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
             ) {
-                filteredProducts.shuffled().take(3).forEach { product ->
+                recentProducts.forEach { product ->
                     FoodCard(
                         image = product.image,
                         title = product.name,
@@ -371,6 +381,8 @@ fun Home(navController: NavController ,
                         price = product.price,
                         expanded = false,
                         onAddClick = {
+                            searchViewModel.onProductClicked(product)
+
                             navController.navigate("productDetail/${product.id}")
                         }
                     )
