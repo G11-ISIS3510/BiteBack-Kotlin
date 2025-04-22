@@ -12,6 +12,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
 import com.google.firebase.auth.FirebaseAuth
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCart
 
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -30,6 +31,9 @@ fun AppNavigation(context: Context, startDestination: String) {
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
             ProductDetailScreen(navController, productId)
+        }
+        composable("cart") {
+            ShoppingCart(navController)
         }
     }
 }

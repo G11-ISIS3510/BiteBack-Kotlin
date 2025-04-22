@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             BiteBackTheme {
                 val user = FirebaseAuth.getInstance().currentUser
                 //val startDestination = if (user != null) "home" else "login"
-                val startDestination = "login"
+                val startDestination = "cart"
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding)) {
