@@ -4,13 +4,9 @@ import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,8 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,8 +37,13 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel = viewModel()) {
-    val message by shoppingViewModel.message.collectAsState()
-    var quantity by remember { mutableStateOf(1) }
+
+    var quantityMap by remember { mutableStateOf(mutableMapOf<String, Int>()) }
+    val mercadingProducts by shoppingViewModel.mercarProducts.collectAsState()
+
+    LaunchedEffect(Unit) {
+        shoppingViewModel.fetchMercarProducts()
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -65,17 +64,39 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 textAlign = TextAlign.Center
             )
 
-            CartItemCard(
-                imageUrl = "https://tse1.mm.bing.net/th/id/OIP.QDDd-PykGkDTKZB0JQjDSAHaGJ?rs=1&pid=ImgDetMain",
-                productName = "Magnificarne",
-                discountPercent = 35,
-                priceBefore = 40000,
-                quantity = quantity,
-                onIncrease = { quantity++ },
-                onDecrease = { if (quantity > 0) quantity-- },
-                onDelete = { /* Eliminar del carrito */ },
-                onClick = { /* Navegar al detalle o mostrar más info */ }
-            )
+            mercadingProducts.forEach { product ->
+                val quantity = quantityMap[product.id] ?: 1
+                val priceBefore = product.price.toInt()
+                val discountPercent = product.discount.toInt()
+
+                CartItemCard(
+                    imageUrl = product.image,
+                    productName = product.name,
+                    discountPercent = discountPercent,
+                    priceBefore = priceBefore,
+                    quantity = quantity,
+                    onIncrease = {
+                        quantityMap = quantityMap.toMutableMap().apply {
+                            this[product.id] = quantity + 1
+                        }
+                    },
+                    onDecrease = {
+                        if (quantity > 1) {
+                            quantityMap = quantityMap.toMutableMap().apply {
+                                this[product.id] = quantity - 1
+                            }
+                        }
+                    },
+                    onDelete = {
+                        // TODO: lógica para eliminar el producto del DataStore o lista
+                    },
+                    onClick = {
+                        // TODO: navegar al detalle del producto
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
 
 
@@ -85,22 +106,27 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 .padding(bottom = 100.dp)
         ) {
             PayNowButtonAnimated(
-                totalPrice = 115000,
+                totalPrice = mercadingProducts.sumOf {
+                    val quantity = quantityMap[it.id] ?: 1
+                    val discountedPrice = it.price.toInt() - (it.price.toInt() * it.discount.toInt() / 100)
+                    discountedPrice * quantity
+                },
                 onPaymentConfirmed = {
-                    // Make mock payment
+                    // Mock payment logic
                 }
             )
         }
 
+        // NavBar
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         ) {
             NavBar(navController = navController, currentRoute = "cart")
         }
-
     }
 }
+
 
 
 @Composable

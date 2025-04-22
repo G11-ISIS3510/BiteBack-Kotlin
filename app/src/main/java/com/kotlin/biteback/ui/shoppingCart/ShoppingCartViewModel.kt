@@ -1,10 +1,30 @@
 package com.kotlin.biteback.ui.shoppingCart
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kotlin.biteback.data.model.Product
+import com.kotlin.biteback.data.model.ProductWithBusiness
+import com.kotlin.biteback.utils.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class ShoppingCartViewModel : ViewModel() {
-    private val _message = MutableStateFlow("Bienvenido al Carrito")
-    val message: StateFlow<String> = _message
+class ShoppingCartViewModel(application: Application) : AndroidViewModel(application) {
+
+    // RecentProducts
+    private val _mercarProducts = MutableStateFlow<List<Product>>(emptyList())
+    val mercarProducts: StateFlow<List<Product>> = _mercarProducts
+
+    fun fetchMercarProducts() {
+        viewModelScope.launch {
+            DataStoreManager.getMercadosProducts(getApplication()).collect {
+                _mercarProducts.value = it
+            }
+        }
+    }
+
+
+
 }
