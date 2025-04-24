@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                 val startDestination = if (user != null) "home" else "login"
 
                 val appViewModel: AppViewModel = viewModel()
-
+                
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(modifier = Modifier
                         .fillMaxSize()
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                         // ⚠️ Navegación de la app
                         AppNavigation(
                             context = this@MainActivity,
-                            startDestination = startDestination
+                            startDestination = "home"
                         )
                     }
                 }
