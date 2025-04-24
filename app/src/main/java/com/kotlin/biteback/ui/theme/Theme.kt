@@ -33,12 +33,14 @@ val YellowAccent = Color(0xFFFCBF49)
 val BeigeSecondary = Color(0xFFEAE2B7)
 val NavySecondary = Color(0xFF03071E)
 
+val SurfaceGray = Color(0xF2F2F2F0)
+
 private val LightColors = lightColorScheme(
     primary = OrangePrimary,
     onPrimary = Color.White,
     secondary = OrangePrimary,
     background = Color.White,
-    surface = Color.White,
+    surface = SurfaceGray,
     onBackground = NavyDark,
     onSurface = BeigeLight,
 )
