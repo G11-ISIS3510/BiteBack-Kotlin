@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,8 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.components.BackButton
 import com.kotlin.biteback.data.repository.ProductDetailRepository
+import com.kotlin.biteback.utils.DataStoreManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductDetailScreen(navController: NavController, productId: String) {
@@ -33,6 +36,9 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
     val product by viewModel.product.collectAsState()
     var quantity by remember { mutableStateOf(1) }
     val colors = MaterialTheme.colorScheme
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(productId) {
         viewModel.fetchProduct(productId)
@@ -109,9 +115,15 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                             Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall, color = colors.onBackground)
                         }
                     }
-
+                    // use it as a product?
                     Button(
-                        onClick = { /* Acción */ }, //TODO ir a compra cuando esté listo
+                        onClick = {
+                            scope.launch {
+                                DataStoreManager.mercarProduct(context, it)
+                            }
+
+
+                        }, //TODO ir a compra cuando esté listo
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
