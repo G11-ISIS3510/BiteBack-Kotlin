@@ -18,7 +18,7 @@ object DataStoreManager  {
     private val SEARCH_QUERY_KEY = stringPreferencesKey("search_query")
     // Key for recent products
     private val RECENT_PRODUCTS_KEY = stringPreferencesKey("recent_products")
-    // Key for recent products
+    // Key for mercadeo products
     private val MERCAR_PRODUCTS_KEY = stringPreferencesKey("mercar_products")
 
 
@@ -76,6 +76,4 @@ object DataStoreManager  {
             } ?: emptyList()
         }
     }
-
-
 }
