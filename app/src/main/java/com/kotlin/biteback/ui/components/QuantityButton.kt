@@ -34,16 +34,17 @@ fun QuantityButton(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(40.dp)
+                .size(32.dp)
                 .background(Color.White, CircleShape)
                 .clickable { onDecrease() }
-        ) {
-            Text(text = "-", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        )
+        {
+            Text(text = "-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
 
         Text(
             text = quantity.toString(),
-            fontSize = 24.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -51,11 +52,11 @@ fun QuantityButton(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(40.dp)
+                .size(32.dp)
                 .background(Color(0xFFFF9800), CircleShape)
                 .clickable { onIncrease() }
         ) {
-            Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = "+", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }

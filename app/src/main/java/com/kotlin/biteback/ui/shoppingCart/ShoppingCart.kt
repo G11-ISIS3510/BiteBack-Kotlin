@@ -39,7 +39,6 @@ import com.kotlin.biteback.utils.DataStoreManager.removeProductFromCart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel = viewModel()) {
 
