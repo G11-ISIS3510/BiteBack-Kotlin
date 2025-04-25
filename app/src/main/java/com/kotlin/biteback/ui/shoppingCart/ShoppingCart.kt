@@ -31,13 +31,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kotlin.biteback.ui.components.CartItemCard
 import com.kotlin.biteback.ui.components.NavBar
 import com.kotlin.biteback.utils.DataStoreManager.removeProductFromCart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.content.Context
+import com.kotlin.biteback.utils.NetworkUtils
+import android.widget.Toast
+import com.kotlin.biteback.data.model.Product
+
 
 @Composable
 fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel ) {
@@ -111,29 +115,22 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 100.dp)
         ) {
+            val context = LocalContext.current
+
             PayNowButtonAnimated(
                 totalPrice = mercadingProducts.sumOf {
                     val quantity = quantityMap[it.id] ?: 1
                     val discountedPrice = it.price.toInt() - (it.price.toInt() * it.discount.toInt() / 100)
                     discountedPrice * quantity
                 },
-                onPaymentConfirmed = {
-
-                    val elapsedTime = shoppingViewModel.getElapsedCartTimeInMillis()
-                    shoppingViewModel.registerPurchase(
-                        mercadingProducts,
-                        quantityMap,
-                        elapsedTime = elapsedTime,
-                        onSuccess = {
-                            shoppingViewModel.clearCart()
-                            println("Firestore: Payment register completed ")
-                        },
-                        onError = { e ->
-                            Log.e("Firestore", "Error in the payment register", e)
-                        }
-                    )
-                }
+                context = context,
+                mercadingProducts = mercadingProducts,
+                quantityMap = quantityMap,
+                shoppingViewModel = shoppingViewModel
             )
+
+
+
         }
 
         // NavBar
@@ -146,11 +143,13 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
     }
 }
 
-
 @Composable
 fun PayNowButtonAnimated(
     totalPrice: Int,
-    onPaymentConfirmed: () -> Unit
+    context: Context,
+    mercadingProducts: List<Product>,
+    quantityMap: Map<String, Int>,
+    shoppingViewModel: ShoppingCartViewModel
 ) {
     var isProcessing by remember { mutableStateOf(false) }
     var isPaymentDone by remember { mutableStateOf(false) }
@@ -169,12 +168,38 @@ fun PayNowButtonAnimated(
         transitionSpec = { tween(durationMillis = 600) }, label = "CornerRadiusAnim"
     ) { done -> if (done) 16.dp else 50.dp }
 
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(isProcessing) {
         if (isProcessing) {
             delay(2000)
             isPaymentDone = true
             delay(1500)
-            onPaymentConfirmed()
+
+            coroutineScope.launch {
+                if (NetworkUtils.isConnected(context)) {
+                    val elapsedTime = shoppingViewModel.getElapsedCartTimeInMillis()
+                    shoppingViewModel.registerPurchase(
+                        products = mercadingProducts,
+                        quantityMap = quantityMap,
+                        elapsedTime = elapsedTime,
+                        onSuccess = {
+                            shoppingViewModel.clearCart()
+                            Toast.makeText(context, "Compra registrada", Toast.LENGTH_SHORT).show()
+                        },
+                        onError = {
+                            Toast.makeText(context, "Error al registrar la compra", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                } else {
+                    shoppingViewModel.savePendingPurchaseOffline(
+                        context = context,
+                        products = mercadingProducts,
+                        quantityMap = quantityMap
+                    )
+                    Toast.makeText(context, "Compra guardada para enviar cuando haya conexión", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 

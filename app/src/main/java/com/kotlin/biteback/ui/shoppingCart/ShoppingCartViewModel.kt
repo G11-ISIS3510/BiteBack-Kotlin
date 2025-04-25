@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kotlin.biteback.data.model.PendingPurchase
 import com.kotlin.biteback.data.model.Product
 import com.kotlin.biteback.data.model.ProductWithBusiness
 import com.kotlin.biteback.data.repository.ShoppingCartRepository
@@ -14,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.content.Context
+import com.google.gson.Gson
 
 class ShoppingCartViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -97,6 +100,44 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
     fun clearCartTimer() {
         timeoutJob?.cancel()
         purchaseStartTime = null
+    }
+
+    fun savePendingPurchaseOffline(
+        context: Context,
+        products: List<Product>,
+        quantityMap: Map<String, Int>
+    ) {
+        val pendingPurchase = PendingPurchase(
+            products = products,
+            quantities = quantityMap,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val json = Gson().toJson(pendingPurchase)
+        val sharedPref = context.getSharedPreferences("offline_purchases", Context.MODE_PRIVATE)
+        sharedPref.edit().putString("pending_purchase", json).apply()
+    }
+
+    fun trySendPendingPurchase(context: Context) {
+        val sharedPref = context.getSharedPreferences("offline_purchases", Context.MODE_PRIVATE)
+        val json = sharedPref.getString("pending_purchase", null) ?: return
+
+        val gson = Gson()
+        val pending = gson.fromJson(json, PendingPurchase::class.java)
+
+        registerPurchase(
+            products = pending.products,
+            quantityMap = pending.quantities,
+            elapsedTime = null,
+            onSuccess = {
+                clearCart()
+                sharedPref.edit().remove("pending_purchase").apply()
+                Log.d("OfflinePurchase", "Compra pendiente enviada correctamente")
+            },
+            onError = {
+                Log.e("OfflinePurchase", "Falló reintento de compra pendiente", it)
+            }
+        )
     }
 
 
