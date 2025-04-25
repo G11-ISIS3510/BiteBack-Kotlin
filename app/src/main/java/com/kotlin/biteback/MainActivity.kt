@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
             BiteBackTheme {
                 val user = FirebaseAuth.getInstance().currentUser
                 val startDestination = if (user != null) "home" else "login"
-
                 val appViewModel: AppViewModel = viewModel()
                 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -82,7 +81,7 @@ class MainActivity : ComponentActivity() {
                         // ⚠️ Navegación de la app
                         AppNavigation(
                             context = this@MainActivity,
-                            startDestination = "home"
+                            startDestination = startDestination
                         )
                     }
                 }

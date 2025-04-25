@@ -59,7 +59,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
                     _authState.value = AuthState.Success
                 } else {
                     println("❌ (Catch) Login offline fallido. Credenciales no coinciden.")
-                    _authState.value = AuthState.Error("No hay conexión y las credenciales no coinciden")
+                    _authState.value = AuthState.Error("No se puede iniciar sesión sin conexión a internet")
                 }
             }
         }
