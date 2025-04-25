@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel = viewModel()) {
+fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel ) {
 
     var quantityMap by remember { mutableStateOf(mutableMapOf<String, Int>()) }
     val mercadingProducts by shoppingViewModel.mercarProducts.collectAsState()
@@ -118,9 +118,12 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     discountedPrice * quantity
                 },
                 onPaymentConfirmed = {
+
+                    val elapsedTime = shoppingViewModel.getElapsedCartTimeInMillis()
                     shoppingViewModel.registerPurchase(
                         mercadingProducts,
                         quantityMap,
+                        elapsedTime = elapsedTime,
                         onSuccess = {
                             shoppingViewModel.clearCart()
                             println("Firestore: Payment register completed ")

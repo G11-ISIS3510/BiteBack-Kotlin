@@ -14,6 +14,7 @@ class ShoppingCartRepository {
     fun registerPurchase(
         products: List<Product>,
         quantityMap: Map<String, Int>,
+        elapsedTime: Long?,
         onSuccess: () -> Unit,
         onError: (Exception) -> Unit
     ) {
@@ -30,6 +31,7 @@ class ShoppingCartRepository {
             )
         }
 
+
         val totalItems = purchaseProducts.sumOf { it["quantity"] as Int }
 
         val totalPrice = products.sumOf {
@@ -44,6 +46,7 @@ class ShoppingCartRepository {
             "time" to SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(date),
             "day_of_week" to dayOfWeek,
             "total_items" to totalItems,
+            "elapsedTimeMillis" to elapsedTime,
             "total_price" to totalPrice,
             "products" to purchaseProducts
         )

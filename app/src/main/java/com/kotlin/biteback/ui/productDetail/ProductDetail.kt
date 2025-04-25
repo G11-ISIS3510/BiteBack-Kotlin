@@ -33,13 +33,14 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.components.BackButton
 import com.kotlin.biteback.data.repository.ProductDetailRepository
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 import com.kotlin.biteback.utils.DataStoreManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.kotlin.biteback.ui.theme.GreenAccent
 
 @Composable
-fun ProductDetailScreen(navController: NavController, productId: String) {
+fun ProductDetailScreen(navController: NavController, productId: String, shoppingCartViewModel: ShoppingCartViewModel) {
     val factory = ProductDetailViewModelFactory(ProductDetailRepository())
     val viewModel: ProductDetailViewModel = viewModel(factory = factory)
     val product by viewModel.product.collectAsState()
@@ -150,7 +151,14 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                         AddToCartButtonAnimated(
                             onAdded = {
                                 scope.launch {
-                                    product?.let { DataStoreManager.mercarProduct(context, it) }
+                                    product?.let {
+                                        DataStoreManager.mercarProduct(context, it)
+                                        shoppingCartViewModel.markCartStarted(
+                                            products = listOf(it), // o tu lista actual del carrito
+                                            quantityMap = mapOf(it.id to 1), // o el real map si ya lo tienes
+                                        )
+
+                                    }
                                 }
                             },
                             modifier = Modifier
