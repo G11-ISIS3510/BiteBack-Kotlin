@@ -18,7 +18,7 @@ object DataStoreManager  {
     private val SEARCH_QUERY_KEY = stringPreferencesKey("search_query")
     // Key for recent products
     private val RECENT_PRODUCTS_KEY = stringPreferencesKey("recent_products")
-    // Key for recent products
+    // Key for mercadeo products
     private val MERCAR_PRODUCTS_KEY = stringPreferencesKey("mercar_products")
 
 
@@ -69,6 +69,17 @@ object DataStoreManager  {
         }
     }
 
+    suspend fun removeProductFromCart(context: Context, productId: String) {
+        context.dataStore.edit { prefs ->
+            val currentList = prefs[MERCAR_PRODUCTS_KEY]?.let {
+                Json.decodeFromString<List<Product>>(it)
+            } ?: emptyList()
+
+            val updatedList = currentList.filter { it.id != productId }
+            prefs[MERCAR_PRODUCTS_KEY] = Json.encodeToString(updatedList)
+        }
+    }
+
     fun getMercadosProducts(context: Context): Flow<List<Product>> {
         return context.dataStore.data.map { prefs ->
             prefs[MERCAR_PRODUCTS_KEY]?.let {
@@ -77,5 +88,9 @@ object DataStoreManager  {
         }
     }
 
-
+    suspend fun clearMercarProducts(context: Context) {
+        context.dataStore.edit { prefs ->
+            prefs[MERCAR_PRODUCTS_KEY] = Json.encodeToString(emptyList<Product>())
+        }
+    }
 }

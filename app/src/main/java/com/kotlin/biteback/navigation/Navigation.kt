@@ -10,16 +10,18 @@ import com.kotlin.biteback.ui.register.Register
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
 import com.google.firebase.auth.FirebaseAuth
 import com.kotlin.biteback.ui.shoppingCart.ShoppingCart
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AppNavigation(context: Context, startDestination: String) {
     val navController = rememberNavController()
-
+    val shoppingViewModel: ShoppingCartViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable("login") { Login(navController, context) }
@@ -30,10 +32,10 @@ fun AppNavigation(context: Context, startDestination: String) {
         composable("restaurantReviews") { RestaurantReviews(navController) }
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
-            ProductDetailScreen(navController, productId)
+            ProductDetailScreen(navController, productId, shoppingCartViewModel = shoppingViewModel)
         }
         composable("cart") {
-            ShoppingCart(navController)
+            ShoppingCart(navController,shoppingViewModel)
         }
     }
 }

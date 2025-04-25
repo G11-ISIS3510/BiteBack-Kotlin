@@ -1,5 +1,6 @@
 package com.kotlin.biteback.ui.shoppingCart
 
+import android.util.Log
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
@@ -25,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,10 +35,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kotlin.biteback.ui.components.CartItemCard
 import com.kotlin.biteback.ui.components.NavBar
+import com.kotlin.biteback.utils.DataStoreManager.removeProductFromCart
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel = viewModel()) {
+fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel ) {
 
     var quantityMap by remember { mutableStateOf(mutableMapOf<String, Int>()) }
     val mercadingProducts by shoppingViewModel.mercarProducts.collectAsState()
@@ -54,7 +58,7 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 .padding(bottom = 100.dp)
         ) {
             Text(
-                text = "Mis carrito uwu",
+                text = "Mi Carrito uwu",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A1A1A),
@@ -63,7 +67,8 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     .padding(top = 10.dp, bottom = 24.dp),
                 textAlign = TextAlign.Center
             )
-
+            val context = LocalContext.current
+            val coroutineScope = rememberCoroutineScope()
             mercadingProducts.forEach { product ->
                 val quantity = quantityMap[product.id] ?: 1
                 val priceBefore = product.price.toInt()
@@ -88,7 +93,9 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                         }
                     },
                     onDelete = {
-                        // TODO: lógica para eliminar el producto del DataStore o lista
+                        coroutineScope.launch {
+                            removeProductFromCart(context, product.id)
+                        }
                     },
                     onClick = {
                         // TODO: navegar al detalle del producto
@@ -98,7 +105,6 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-
 
         Box(
             modifier = Modifier
@@ -112,7 +118,20 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     discountedPrice * quantity
                 },
                 onPaymentConfirmed = {
-                    // Mock payment logic
+
+                    val elapsedTime = shoppingViewModel.getElapsedCartTimeInMillis()
+                    shoppingViewModel.registerPurchase(
+                        mercadingProducts,
+                        quantityMap,
+                        elapsedTime = elapsedTime,
+                        onSuccess = {
+                            shoppingViewModel.clearCart()
+                            println("Firestore: Payment register completed ")
+                        },
+                        onError = { e ->
+                            Log.e("Firestore", "Error in the payment register", e)
+                        }
+                    )
                 }
             )
         }
@@ -126,7 +145,6 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
         }
     }
 }
-
 
 
 @Composable

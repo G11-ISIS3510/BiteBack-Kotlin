@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -71,13 +73,14 @@ fun CartItemCard(
         tonalElevation = 0.dp,
         shadowElevation = elevation
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = productName,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(180.dp)
+
+                    .width(100.dp).height(155.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .align(Alignment.CenterStart)
 
@@ -87,11 +90,11 @@ fun CartItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 190.dp, end = 20.dp, top = 10.dp, bottom = 5.dp),
+                .padding(start = 100.dp, end = 20.dp, top = 10.dp, bottom = 1.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -99,7 +102,7 @@ fun CartItemCard(
                 Text(
                     text = productName,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp,
+                    fontSize = 14.sp,
                     color = Color(0xFF1A1A1A)
                 )
 
@@ -113,7 +116,7 @@ fun CartItemCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "$discountPercent% DCTO",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         color = Color.Gray
                     )
                 }
@@ -125,12 +128,12 @@ fun CartItemCard(
                         text = "$${finalPrice * quantity}",
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFFFF9800),
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "$${priceBefore}",
-                        fontSize = 16.sp,
+                        fontSize = 12.sp,
                         color = Color.Gray,
                         style = TextStyle(textDecoration = TextDecoration.LineThrough)
                     )
