@@ -1,5 +1,6 @@
 package com.kotlin.biteback.ui.shoppingCart
 
+import android.util.Log
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
@@ -58,7 +59,7 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                 .padding(bottom = 100.dp)
         ) {
             Text(
-                text = "Mis carrito uwu",
+                text = "Mi Carrito uwu",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A1A1A),
@@ -106,7 +107,6 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
             }
         }
 
-
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -119,7 +119,17 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     discountedPrice * quantity
                 },
                 onPaymentConfirmed = {
-                    // Mock payment logic
+                    shoppingViewModel.registerPurchase(
+                        mercadingProducts,
+                        quantityMap,
+                        onSuccess = {
+                            shoppingViewModel.clearCart()
+                            println("Firestore: Payment register completed ")
+                        },
+                        onError = { e ->
+                            Log.e("Firestore", "Error in the payment register", e)
+                        }
+                    )
                 }
             )
         }
