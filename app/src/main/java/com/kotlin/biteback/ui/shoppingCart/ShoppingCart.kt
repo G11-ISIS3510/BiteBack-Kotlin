@@ -25,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,7 +34,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kotlin.biteback.ui.components.CartItemCard
 import com.kotlin.biteback.ui.components.NavBar
+import com.kotlin.biteback.utils.DataStoreManager.removeProductFromCart
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel = viewModel()) {
@@ -63,7 +67,8 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     .padding(top = 10.dp, bottom = 24.dp),
                 textAlign = TextAlign.Center
             )
-
+            val context = LocalContext.current
+            val coroutineScope = rememberCoroutineScope()
             mercadingProducts.forEach { product ->
                 val quantity = quantityMap[product.id] ?: 1
                 val priceBefore = product.price.toInt()
@@ -88,7 +93,9 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                         }
                     },
                     onDelete = {
-                        // TODO: lógica para eliminar el producto del DataStore o lista
+                        coroutineScope.launch {
+                            removeProductFromCart(context, product.id)
+                        }
                     },
                     onClick = {
                         // TODO: navegar al detalle del producto
@@ -126,7 +133,6 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
         }
     }
 }
-
 
 
 @Composable
