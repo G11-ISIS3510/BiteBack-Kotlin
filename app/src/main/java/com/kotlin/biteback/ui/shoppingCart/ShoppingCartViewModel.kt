@@ -140,5 +140,4 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
         )
     }
 
-
 }
