@@ -186,6 +186,9 @@ fun Register(navController: NavController, context: Context) {
             Button(
                 onClick = {
                     when {
+                            email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                            errorMessage = "El correo electrónico no es válido"
+                        }
                         password != confirmPassword -> {
                             errorMessage = "Las contraseñas no coinciden"
                         }
