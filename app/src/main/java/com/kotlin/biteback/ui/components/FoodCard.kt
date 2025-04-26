@@ -32,17 +32,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.IconButton
+import coil.compose.rememberImagePainter
 
 
 @Composable
 fun FoodCard(
-    image: Painter,
+    image: String,
     title: String,
     discount: Double,
     location: String,
     price: Double,
     expanded: Boolean = false,
-    onAddClick: () -> Unit = {},
+    onAddClick:  () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -63,7 +64,7 @@ fun FoodCard(
         ) {
 
             Image(
-                painter = image,
+                painter = rememberImagePainter(image),
                 contentDescription = "Food Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

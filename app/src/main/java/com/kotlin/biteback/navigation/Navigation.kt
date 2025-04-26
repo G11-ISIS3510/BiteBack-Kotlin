@@ -8,28 +8,47 @@ import com.kotlin.biteback.ui.login.Login
 import com.kotlin.biteback.ui.productDetail.ProductDetailScreen
 import com.kotlin.biteback.ui.register.Register
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kotlin.biteback.ui.restaurantReviews.RestaurantReviews
+import com.google.firebase.auth.FirebaseAuth
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCart
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
+import com.kotlin.biteback.ui.login.LoginViewModel
+import com.kotlin.biteback.ui.login.LoginViewModelFactory
+import com.kotlin.biteback.data.repositories.AuthRepository
 
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
-fun AppNavigation(context: Context) {
+fun AppNavigation(context: Context, startDestination: String) {
     val navController = rememberNavController()
+    val shoppingViewModel: ShoppingCartViewModel = viewModel()
+    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(AuthRepository()))
 
-    NavHost(navController, startDestination = "login") {
-        // Pantalla de Login
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") { Login(navController, context) }
-
-        // **Pantalla de Registro** (La agregamos aquí)
         composable("register") { Register(navController, context) }
 
-        // Pantalla de Home (Solo accesible después de iniciar sesión)
         composable("home") {
-            Home(navController, onNotificationClick = { /* Acción al hacer clic en notificaciones */ })
+            Home(
+                navController,
+                onNotificationClick = {
+                    loginViewModel.logout(context, navController)
+                }
+            )
         }
 
-        // Pantalla de Detalle del Producto
+        composable("restaurantReviews") { RestaurantReviews(navController) }
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
-            println("🔍 Navegando a ProductDetail con ID: $productId")
-            ProductDetailScreen(navController, productId)
+            ProductDetailScreen(navController, productId, shoppingCartViewModel = shoppingViewModel)
+        }
+        composable("cart") {
+            ShoppingCart(navController,shoppingViewModel)
         }
     }
 }
+
+

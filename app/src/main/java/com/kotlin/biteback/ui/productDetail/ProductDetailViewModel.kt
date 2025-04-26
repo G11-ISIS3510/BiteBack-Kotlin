@@ -37,5 +37,7 @@ class ProductDetailViewModel(private val repository: ProductDetailRepository) : 
         val remainingDays = (remainingSeconds / 86400).toInt()
         return if (remainingDays > 0) "$remainingDays días" else "Expira hoy"
     }
+
+
 }
 

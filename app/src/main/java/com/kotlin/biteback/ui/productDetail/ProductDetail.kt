@@ -1,11 +1,17 @@
 package com.kotlin.biteback.ui.productDetail
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -25,14 +33,22 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.components.BackButton
 import com.kotlin.biteback.data.repository.ProductDetailRepository
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
+import com.kotlin.biteback.utils.DataStoreManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.kotlin.biteback.ui.theme.GreenAccent
 
 @Composable
-fun ProductDetailScreen(navController: NavController, productId: String) {
+fun ProductDetailScreen(navController: NavController, productId: String, shoppingCartViewModel: ShoppingCartViewModel) {
     val factory = ProductDetailViewModelFactory(ProductDetailRepository())
     val viewModel: ProductDetailViewModel = viewModel(factory = factory)
     val product by viewModel.product.collectAsState()
     var quantity by remember { mutableStateOf(1) }
     val colors = MaterialTheme.colorScheme
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(productId) {
         viewModel.fetchProduct(productId)
@@ -64,7 +80,7 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$${it.price.toInt()}", // ✅ Precio original (tachado)
+                            text = "$${it.price.toInt()}",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.Gray,
                             textDecoration = TextDecoration.LineThrough
@@ -110,13 +126,48 @@ fun ProductDetailScreen(navController: NavController, productId: String) {
                         }
                     }
 
-                    Button(
-                        onClick = { /* Acción */ }, //TODO ir a compra cuando esté listo
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Me lo merco")
+                        IconButton(
+                            onClick = { navController.navigate("cart") },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = "Ir al carrito",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+
+                        AddToCartButtonAnimated(
+                            onAdded = {
+                                scope.launch {
+                                    product?.let {
+                                        DataStoreManager.mercarProduct(context, it)
+                                        shoppingCartViewModel.markCartStarted(
+                                            products = listOf(it), // o tu lista actual del carrito
+                                            quantityMap = mapOf(it.id to 1), // o el real map si ya lo tienes
+                                        )
+
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 16.dp)
+                        )
+
                     }
+
                 } ?: run {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
@@ -222,3 +273,77 @@ fun InstructionsIngredientsSwitch() {
         }
     }
 }
+
+@Composable
+fun AddToCartButtonAnimated(
+    onAdded: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isProcessing by remember { mutableStateOf(false) }
+    var isDone by remember { mutableStateOf(false) }
+
+    val transition = updateTransition(targetState = isDone, label = "AddToCartTransition")
+
+    val buttonWidth by transition.animateDp(
+        transitionSpec = { tween(durationMillis = 600) },
+        label = "WidthAnim"
+    ) { done -> if (done) 220.dp else if (isProcessing) 60.dp else 320.dp }
+
+    val buttonColor by transition.animateColor(
+        transitionSpec = { tween(durationMillis = 600) },
+        label = "ColorAnim"
+    ) { done ->
+        if (done) GreenAccent else MaterialTheme.colorScheme.primary
+    }
+
+    val cornerRadius by transition.animateDp(
+        transitionSpec = { tween(durationMillis = 600) },
+        label = "CornerAnim"
+    ) { done -> if (done) 16.dp else 50.dp }
+
+    LaunchedEffect(isProcessing) {
+        if (isProcessing) {
+            delay(1500)
+            isDone = true
+            delay(1200)
+            onAdded()
+            isProcessing = false
+            isDone = false
+        }
+    }
+
+    Button(
+        onClick = { isProcessing = true },
+        modifier = modifier
+            .height(56.dp)
+            .width(buttonWidth)
+            .shadow(8.dp, shape = RoundedCornerShape(cornerRadius)),
+        colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+        shape = RoundedCornerShape(cornerRadius),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        when {
+            isDone -> {
+                Icon(Icons.Default.Check, contentDescription = "Añadido", tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("¡Añadido!", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+
+            isProcessing -> {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+
+            else -> {
+                Icon(Icons.Default.ShoppingCart, contentDescription = "Me lo merco", tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Me lo merco →", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+

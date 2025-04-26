@@ -17,11 +17,12 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.kotlin.biteback.data.repository.LocationRepository
 import com.kotlin.biteback.ui.home.LocationViewModelFactory
-import com.kotlin.biteback.viewModel.LocationViewModel
+import com.kotlin.biteback.ui.locationText.LocationViewModel
 import android.Manifest
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun LocationText(locationRepository: LocationRepository) {
+    val colors = MaterialTheme.colorScheme
     val viewModel: LocationViewModel = viewModel(factory = LocationViewModelFactory(locationRepository))
     val address by viewModel.address.collectAsState()
     val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -59,12 +61,12 @@ fun LocationText(locationRepository: LocationRepository) {
             Text(text = location,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black)
+                color = colors.onBackground)
         } else {
             Text(text = "Permiso no concedido",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black)
+                color = colors.onBackground)
         }
     }
 

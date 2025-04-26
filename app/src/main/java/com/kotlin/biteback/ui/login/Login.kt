@@ -1,7 +1,6 @@
 package com.kotlin.biteback.ui.login
 
 import android.content.Context
-import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -32,6 +31,8 @@ import com.google.android.gms.common.api.ApiException
 import com.kotlin.biteback.R
 import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun Login(navController: NavController, context: Context) {
@@ -47,7 +48,7 @@ fun Login(navController: NavController, context: Context) {
         GoogleSignIn.getClient(
             context,
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("YOUR_WEB_CLIENT_ID") // Reemplaza con tu Client ID de Firebase
+                .requestIdToken("685056619394-9gslsqdhe5rhsrd68fsq083enl1s0gvg.apps.googleusercontent.com")
                 .requestEmail()
                 .build()
         )
@@ -72,8 +73,14 @@ fun Login(navController: NavController, context: Context) {
             .padding(20.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // LOGO
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+        // LOGO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -106,7 +113,7 @@ fun Login(navController: NavController, context: Context) {
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.background,
-                        contentColor = Color.Black
+                        contentColor = colors.onBackground
                     ),
                     border = BorderStroke(1.dp, Color.Gray),
                     modifier = Modifier
@@ -139,12 +146,18 @@ fun Login(navController: NavController, context: Context) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Botones de Google y Email
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                /*
                 Button(
                     onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
-                    modifier = Modifier.weight(1f).padding(5.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(5.dp)
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.google_logo),
@@ -154,12 +167,15 @@ fun Login(navController: NavController, context: Context) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Google")
                 }
+                */
 
                 Button(
-                    onClick = { },
+                    onClick = { /* Puedes dejarlo vacío o redirigir */ },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
-                    modifier = Modifier.weight(1f).padding(5.dp)
+                    modifier = Modifier
+                        .fillMaxWidth() // ✅ Para que ocupe todo el ancho
+                        .padding(horizontal = 5.dp)
                 ) {
                     Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
                     Spacer(modifier = Modifier.width(4.dp))
@@ -175,8 +191,8 @@ fun Login(navController: NavController, context: Context) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
-                Text("  o  ", color = Color.Gray)
-                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
+                //Text("  o  ", color = Color.Gray)
+                //Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -232,7 +248,7 @@ fun Login(navController: NavController, context: Context) {
 
             // Botón de Inicio de Sesión
             Button(
-                onClick = { viewModel.loginWithEmail(email, password) },
+                onClick = { viewModel.loginWithEmail(email, password, context) },
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier

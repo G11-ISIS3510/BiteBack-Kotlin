@@ -23,6 +23,10 @@ import androidx.navigation.NavController
 import com.kotlin.biteback.R
 import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.kotlin.biteback.utils.NetworkUtils
+
 
 @Composable
 fun Register(navController: NavController, context: Context) {
@@ -43,8 +47,14 @@ fun Register(navController: NavController, context: Context) {
             .padding(20.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // LOGO
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+        // LOGO
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -175,12 +185,26 @@ fun Register(navController: NavController, context: Context) {
             // Botón de registro
             Button(
                 onClick = {
-                    if (password == confirmPassword) {
-                        viewModel.registerWithEmail(email, password, navController)
-                    } else {
-                        errorMessage = "Las contraseñas no coinciden"
+                    when {
+                            email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
+                            errorMessage = "El correo electrónico no es válido"
+                        }
+                        password != confirmPassword -> {
+                            errorMessage = "Las contraseñas no coinciden"
+                        }
+                        password.length < 6 -> {
+                            errorMessage = "La contraseña debe tener al menos 6 caracteres"
+                        }
+                        !NetworkUtils.isConnected(context) -> {
+                            errorMessage = "Se requiere conexión a Internet para registrarse"
+                        }
+                        else -> {
+                            errorMessage = "" // limpia error si todo está bien
+                            viewModel.registerWithEmail(email, password, confirmPassword, context, navController)
+                        }
                     }
-                },
+                }
+                ,
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 modifier = Modifier
