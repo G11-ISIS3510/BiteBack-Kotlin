@@ -50,6 +50,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import androidx.compose.ui.platform.LocalContext
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -75,10 +78,8 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .padding(innerPadding)) {
 
-                        // ⚠️ Banner global
                         NoInternetBanner(appViewModelParam = appViewModel)
 
-                        // ⚠️ Navegación de la app
                         AppNavigation(
                             context = this@MainActivity,
                             startDestination = startDestination
@@ -95,9 +96,11 @@ class MainActivity : ComponentActivity() {
 fun NoInternetBanner(appViewModelParam: AppViewModel) {
 
     val isConnected by appViewModelParam.isConnected.collectAsState()
-
     var showBanner by remember { mutableStateOf(false) }
     var connectionRestored by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val shoppingViewModel: ShoppingCartViewModel = viewModel()
 
     LaunchedEffect(isConnected) {
         if (!isConnected) {
@@ -105,7 +108,12 @@ fun NoInternetBanner(appViewModelParam: AppViewModel) {
             connectionRestored = false
         } else if (showBanner) {
             connectionRestored = true
-            delay(1500)
+            delay(1000)
+
+            // Intentamos enviar compra pendiente
+            shoppingViewModel.trySendPendingPurchase(context)
+
+            delay(1000)
             showBanner = false
         }
     }
@@ -147,8 +155,6 @@ fun NoInternetBanner(appViewModelParam: AppViewModel) {
                     )
                 }
             }
-
         }
-
     }
 }
