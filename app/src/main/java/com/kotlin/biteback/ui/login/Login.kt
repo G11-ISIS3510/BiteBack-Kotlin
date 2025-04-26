@@ -146,12 +146,18 @@ fun Login(navController: NavController, context: Context) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Botones de Google y Email
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                /*
                 Button(
                     onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
-                    modifier = Modifier.weight(1f).padding(5.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(5.dp)
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.google_logo),
@@ -161,12 +167,15 @@ fun Login(navController: NavController, context: Context) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Google")
                 }
+                */
 
                 Button(
-                    onClick = { },
+                    onClick = { /* Puedes dejarlo vacío o redirigir */ },
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
-                    modifier = Modifier.weight(1f).padding(5.dp)
+                    modifier = Modifier
+                        .fillMaxWidth() // ✅ Para que ocupe todo el ancho
+                        .padding(horizontal = 5.dp)
                 ) {
                     Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
                     Spacer(modifier = Modifier.width(4.dp))
@@ -182,8 +191,8 @@ fun Login(navController: NavController, context: Context) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
-                Text("  o  ", color = Color.Gray)
-                Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
+                //Text("  o  ", color = Color.Gray)
+                //Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(10.dp))

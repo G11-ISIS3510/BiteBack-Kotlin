@@ -66,6 +66,9 @@ import com.kotlin.biteback.ui.locationText.LocationText
 import com.kotlin.biteback.viewModel.BusinessViewModel
 import com.kotlin.biteback.viewModel.BusinessViewModelFactory
 import com.kotlin.biteback.data.repository.BusinessRepository
+import androidx.compose.material.icons.outlined.ExitToApp
+
+
 import com.kotlin.biteback.utils.DataStoreManager
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -137,8 +140,8 @@ fun Home(navController: NavController ,
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = "Notificaciones",
+                            imageVector = Icons.Outlined.ExitToApp,
+                            contentDescription = "Cerrar sesión",
                             tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
