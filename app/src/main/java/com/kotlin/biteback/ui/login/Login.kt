@@ -174,7 +174,7 @@ fun Login(navController: NavController, context: Context) {
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                     modifier = Modifier
-                        .fillMaxWidth() // ✅ Para que ocupe todo el ancho
+                        .fillMaxWidth()
                         .padding(horizontal = 5.dp)
                 ) {
                     Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
@@ -211,7 +211,6 @@ fun Login(navController: NavController, context: Context) {
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-
 
             OutlinedTextField(
                 value = password,
