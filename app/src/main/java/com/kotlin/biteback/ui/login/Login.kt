@@ -33,6 +33,9 @@ import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.viewinterop.AndroidView
+import com.bumptech.glide.Glide
+import android.widget.ImageView
 
 @Composable
 fun Login(navController: NavController, context: Context) {
@@ -85,9 +88,14 @@ fun Login(navController: NavController, context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.biteback_logo),
-                    contentDescription = "Biteback Logo",
+                AndroidView(
+                    factory = { context ->
+                        ImageView(context).apply {
+                            Glide.with(context)
+                                .load(R.drawable.biteback_logo)
+                                .into(this)
+                        }
+                    },
                     modifier = Modifier.size(50.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
