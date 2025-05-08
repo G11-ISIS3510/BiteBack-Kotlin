@@ -12,6 +12,10 @@ import android.content.Context
 import com.kotlin.biteback.utils.NetworkUtils
 import com.kotlin.biteback.utils.LocalStorage
 import com.kotlin.biteback.utils.FileStorage
+import com.kotlin.biteback.data.local.UserDatabase
+import com.kotlin.biteback.data.local.UserEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
@@ -34,6 +38,12 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         LocalStorage.saveCredentials(context, email, password)
                         _authState.value = AuthState.Success
                         FileStorage.appendEmailToFile(context, email)
+                        // Guardar en Room
+                        val db = UserDatabase.getDatabase(context)
+                        viewModelScope.launch {
+                            db.userDao().insertUser(UserEntity(email = email, password = password))
+                        }
+
                     } else {
                         println("Firebase: Credenciales incorrectas.")
                         _authState.value = AuthState.Error("Credenciales incorrectas")
@@ -47,8 +57,20 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         println("Login offline exitoso con LocalStorage.")
                         _authState.value = AuthState.Success
                     } else {
-                        println("Login offline fallido. Credenciales no coinciden.")
-                        _authState.value = AuthState.Error("No hay conexión y las credenciales no coinciden")
+                        // Si falla con LocalStorage, intentamos con Room
+                        val db = UserDatabase.getDatabase(context)
+                        viewModelScope.launch {
+                            val user = withContext(Dispatchers.IO) {
+                                db.userDao().getUserByCredentials(email, password)
+                            }
+                            if (user != null) {
+                                println("✅ Login offline exitoso con Room.")
+                                _authState.value = AuthState.Success
+                            } else {
+                                println("Login offline fallido. No hay coincidencias ni en LocalStorage ni en Room.")
+                                _authState.value = AuthState.Error("No hay conexión y las credenciales no coinciden")
+                            }
+                        }
                     }
                 }
             } catch (e: Exception) {
