@@ -16,6 +16,8 @@ import com.kotlin.biteback.data.local.UserDatabase
 import com.kotlin.biteback.data.local.UserEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.kotlin.biteback.utils.EmailSuggestionCache
+
 
 class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
@@ -43,6 +45,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         viewModelScope.launch {
                             db.userDao().insertUser(UserEntity(email = email, password = password))
                         }
+                        EmailSuggestionCache.cache.put(email, email)
 
                     } else {
                         println("Firebase: Credenciales incorrectas.")
