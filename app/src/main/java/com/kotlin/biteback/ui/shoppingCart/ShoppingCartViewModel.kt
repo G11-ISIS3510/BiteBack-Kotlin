@@ -15,8 +15,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import android.content.Context
 import com.google.gson.Gson
+import kotlinx.coroutines.withContext
 
 class ShoppingCartViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -119,25 +121,34 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun trySendPendingPurchase(context: Context) {
-        val sharedPref = context.getSharedPreferences("offline_purchases", Context.MODE_PRIVATE)
-        val json = sharedPref.getString("pending_purchase", null) ?: return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                Log.d("ThreadCheck", "Running on thread: ${Thread.currentThread().name}")
+                val sharedPref = context.getSharedPreferences("offline_purchases", Context.MODE_PRIVATE)
+                val json = sharedPref.getString("pending_purchase", null) ?: return@withContext
+                val pending = Gson().fromJson(json, PendingPurchase::class.java)
 
-        val gson = Gson()
-        val pending = gson.fromJson(json, PendingPurchase::class.java)
-
-        registerPurchase(
-            products = pending.products,
-            quantityMap = pending.quantities,
-            elapsedTime = null,
-            onSuccess = {
-                clearCart()
-                sharedPref.edit().remove("pending_purchase").apply()
-                Log.d("OfflinePurchase", "Compra pendiente enviada correctamente")
-            },
-            onError = {
-                Log.e("OfflinePurchase", "Falló reintento de compra pendiente", it)
+                registerPurchase(
+                    products = pending.products,
+                    quantityMap = pending.quantities,
+                    elapsedTime = null,
+                    onSuccess = {
+                        viewModelScope.launch(Dispatchers.Main) {
+                            Log.d(
+                                "ThreadCheck",
+                                "Success callback on thread: ${Thread.currentThread().name}"
+                            )
+                            clearCart()
+                            sharedPref.edit().remove("pending_purchase").apply()
+                            Log.d("OfflinePurchase", "Compra pendiente enviada correctamente")
+                        }
+                    },
+                    onError = {
+                        Log.e("OfflinePurchase", "Falló reintento de compra pendiente", it)
+                    }
+                )
             }
-        )
+        }
     }
 
 }
