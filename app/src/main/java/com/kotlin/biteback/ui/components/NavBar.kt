@@ -35,7 +35,7 @@ fun NavBar(navController: NavController, currentRoute: String) {
     )
 
     val colors = MaterialTheme.colorScheme
-    val validRoutes = listOf("home", "cart")
+    val validRoutes = listOf("home", "cart","profile")
 
     Box(
         modifier = Modifier
