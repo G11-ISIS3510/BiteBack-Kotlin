@@ -15,6 +15,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.SetOptions
+
+
 
 class UserProfileRepository(private val context: Context) {
     private val firestore = FirebaseFirestore.getInstance()
@@ -39,6 +44,8 @@ class UserProfileRepository(private val context: Context) {
     suspend fun loadUserProfile(): User? = withContext(Dispatchers.IO) {
         _isLoading.value = true
         val userId = auth.currentUser?.uid ?: return@withContext null
+        val email = auth.currentUser?.email
+        createUserIfNotExists(userId, email)
         try {
             val cachedUser = loadFromLocalCache(userId)
             if (cachedUser != null) _user.value = cachedUser
@@ -60,16 +67,21 @@ class UserProfileRepository(private val context: Context) {
     }
 
     suspend fun uploadProfileImage(imageUri: Uri): String? = withContext(Dispatchers.IO) {
-        try {
-            val userId = auth.currentUser?.uid ?: return@withContext null
-            val storageRef = storage.reference.child("profile_images/$userId.jpg")
-            val uploadTask = storageRef.putFile(imageUri).await()
-            val downloadUrl = uploadTask.storage.downloadUrl.await()
-            return@withContext downloadUrl.toString()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@withContext null
+
+        val fileName = "profile_images/${userId}_${UUID.randomUUID()}.jpg"
+        val storageRef = FirebaseStorage.getInstance().reference.child(fileName)
+
+        return@withContext try {
+            storageRef.putFile(imageUri).await()
+            storageRef.downloadUrl.await().toString()
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }
+
+
 
     suspend fun updateProfile(
         name: String,
@@ -188,7 +200,7 @@ class UserProfileRepository(private val context: Context) {
         try {
             for (change in pendingChanges.toList()) {
                 firestore.collection("users").document(userId)
-                    .update(change)
+                    .set(change, SetOptions.merge())
                     .await()
             }
             pendingChanges.clear()
@@ -197,4 +209,23 @@ class UserProfileRepository(private val context: Context) {
             // mantener cambios si fallan
         }
     }
+    fun createUserIfNotExists(userId: String, email: String?) {
+        val docRef = firestore.collection("users").document(userId)
+        docRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                val initialData = mapOf(
+                    "id" to userId,
+                    "email" to email.orEmpty(),
+                    "name" to "",
+                    "phoneNumber" to "",
+                    "profileImageUrl" to "",
+                    "points" to 0,
+                    "createdAt" to System.currentTimeMillis(),
+                    "updatedAt" to System.currentTimeMillis()
+                )
+                docRef.set(initialData)
+            }
+        }
+    }
+
 }

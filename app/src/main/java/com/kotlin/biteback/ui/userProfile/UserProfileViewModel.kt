@@ -10,6 +10,7 @@ import com.kotlin.biteback.utils.LocalStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class UserProfileViewModel(
     private val repository: UserProfileRepository,
@@ -114,7 +115,7 @@ class UserProfileViewModel(
             try {
                 val imageUrl = repository.uploadProfileImage(imageUri)
 
-                if (imageUrl != null) {
+                if (!imageUrl.isNullOrEmpty()) {
                     val currentUser = _user.value
                     if (currentUser != null) {
                         val success = repository.updateProfile(
@@ -124,22 +125,32 @@ class UserProfileViewModel(
                         )
 
                         if (success) {
-                            _updateMessage.value = "Imagen de perfil actualizada"
-                            loadUserProfile()
+                            Log.d("UserProfileViewModel", "Imagen subida correctamente: $imageUrl")
+
+                            _user.value = currentUser.copy(profileImageUrl = imageUrl)
+                            _updateMessage.value = "Imagen de perfil actualizada correctamente"
                         } else {
-                            _updateMessage.value = "Error al actualizar imagen"
+                            Log.e("UserProfileViewModel", "Error al actualizar el perfil en servidor")
+                            _updateMessage.value = "Error al actualizar imagen en el servidor"
                         }
+                    } else {
+                        Log.e("UserProfileViewModel", "currentUser es null")
+                        _updateMessage.value = "Error: No hay usuario cargado"
                     }
                 } else {
-                    _updateMessage.value = "Error al subir imagen"
+                    Log.e("UserProfileViewModel", "imageUrl retornada es nula o vacía")
+                    _updateMessage.value = "Error al subir imagen: URL inválida"
                 }
             } catch (e: Exception) {
-                _updateMessage.value = "Error: ${e.message}"
+                Log.e("UserProfileViewModel", "Excepción al subir imagen: ${e.message}")
+                _updateMessage.value = "Error al subir imagen: ${e.message}"
             } finally {
                 _isUploadingImage.value = false
             }
         }
     }
+
+
 
     fun clearMessage() {
         _updateMessage.value = null
