@@ -70,9 +70,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             BiteBackTheme {
                 val user = FirebaseAuth.getInstance().currentUser
-                val startDestination = if (user != null) "home" else "login"
+                //val startDestination = if (user != null) "home" else "login"
                 val appViewModel: AppViewModel = viewModel()
-                
+                val startDestination = "mystery"
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(modifier = Modifier
                         .fillMaxSize()

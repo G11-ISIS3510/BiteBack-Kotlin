@@ -18,6 +18,8 @@ import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 import com.kotlin.biteback.ui.login.LoginViewModel
 import com.kotlin.biteback.ui.login.LoginViewModelFactory
 import com.kotlin.biteback.data.repositories.AuthRepository
+import com.kotlin.biteback.ui.mysteryBoxes.MysteryBox
+import com.kotlin.biteback.ui.mysteryBoxes.MysteryBoxViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -26,8 +28,10 @@ fun AppNavigation(context: Context, startDestination: String) {
     val navController = rememberNavController()
     val shoppingViewModel: ShoppingCartViewModel = viewModel()
     val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(AuthRepository()))
+    val mysteryBoxViewModel: MysteryBoxViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = startDestination) {
+
         composable("login") { Login(navController, context) }
         composable("register") { Register(navController, context) }
 
@@ -48,6 +52,10 @@ fun AppNavigation(context: Context, startDestination: String) {
         composable("cart") {
             ShoppingCart(navController,shoppingViewModel)
         }
+        composable("mystery") {
+            MysteryBox(navController, mysteryBoxViewModel )
+        }
+
     }
 }
 
