@@ -41,7 +41,7 @@ import com.kotlin.biteback.ui.theme.GreenAccent
 
 @Composable
 fun ProductDetailScreen(navController: NavController, productId: String, shoppingCartViewModel: ShoppingCartViewModel) {
-    val factory = ProductDetailViewModelFactory(ProductDetailRepository())
+    val factory = ProductDetailViewModelFactory()
     val viewModel: ProductDetailViewModel = viewModel(factory = factory)
     val product by viewModel.product.collectAsState()
     var quantity by remember { mutableStateOf(1) }

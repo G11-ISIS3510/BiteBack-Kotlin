@@ -33,7 +33,18 @@ import com.kotlin.biteback.data.repositories.AuthRepository
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.viewinterop.AndroidView
+import com.bumptech.glide.Glide
+import android.widget.ImageView
+import com.kotlin.biteback.utils.EmailSuggestionCache
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalFocusManager
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(navController: NavController, context: Context) {
     val authRepository = remember { AuthRepository() }
@@ -43,6 +54,10 @@ fun Login(navController: NavController, context: Context) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val suggestions = remember { EmailSuggestionCache.cache.snapshot().values.toList() }
+    val emailSuggestions = remember { mutableStateListOf<String>() }
+    var expanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     val googleSignInClient: GoogleSignInClient = remember {
         GoogleSignIn.getClient(
@@ -85,9 +100,14 @@ fun Login(navController: NavController, context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.biteback_logo),
-                    contentDescription = "Biteback Logo",
+                AndroidView(
+                    factory = { context ->
+                        ImageView(context).apply {
+                            Glide.with(context)
+                                .load(R.drawable.biteback_logo)
+                                .into(this)
+                        }
+                    },
                     modifier = Modifier.size(50.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -174,7 +194,7 @@ fun Login(navController: NavController, context: Context) {
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
                     modifier = Modifier
-                        .fillMaxWidth() // ✅ Para que ocupe todo el ancho
+                        .fillMaxWidth()
                         .padding(horizontal = 5.dp)
                 ) {
                     Icon(imageVector = Icons.Filled.Email, contentDescription = "Email")
@@ -198,20 +218,66 @@ fun Login(navController: NavController, context: Context) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // Campos de entrada de correo y contraseña
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo Electrónico", color = colors.onBackground) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                textStyle = LocalTextStyle.current.copy(color = colors.onBackground),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colors.primary,
-                    unfocusedBorderColor = colors.onBackground.copy(alpha = 0.6f),
-                    cursorColor = colors.primary
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+            LaunchedEffect(email) {
+                emailSuggestions.clear()
+                if (email.isNotBlank()) {
+                    val filtered = suggestions.filter { it.contains(email, ignoreCase = true) }
+                    emailSuggestions.addAll(filtered)
+                    expanded = filtered.isNotEmpty()
+                } else {
+                    expanded = false
+                }
+            }
 
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Correo Electrónico", color = colors.onBackground) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    textStyle = LocalTextStyle.current.copy(color = colors.onBackground),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colors.primary,
+                        unfocusedBorderColor = colors.onBackground.copy(alpha = 0.6f),
+                        cursorColor = colors.primary
+                    ),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                    },
+                    singleLine = true
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
+                    emailSuggestions.forEach { suggestion ->
+                        DropdownMenuItem(
+                            modifier = Modifier.height(36.dp),
+                            text = {
+                                Text(
+                                    text = suggestion,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF757575)
+                                )
+                            },
+                            onClick = {
+                                email = suggestion
+                                expanded = false
+                                focusManager.clearFocus()
+                            }
+                        )
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = password,
