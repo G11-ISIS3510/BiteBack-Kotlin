@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.kotlin.biteback.ui.components.BackButton
 import com.kotlin.biteback.data.repository.ProductDetailRepository
+import com.kotlin.biteback.ui.components.BusinessMap
 import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 import com.kotlin.biteback.utils.DataStoreManager
 import kotlinx.coroutines.delay
@@ -49,6 +50,7 @@ fun ProductDetailScreen(navController: NavController, productId: String, shoppin
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val business by viewModel.business.collectAsState()
 
     LaunchedEffect(productId) {
         viewModel.fetchProduct(productId)
@@ -107,24 +109,21 @@ fun ProductDetailScreen(navController: NavController, productId: String, shoppin
                         val formattedExpirationDate by viewModel.formattedExpirationDate.collectAsState()
                         ProductInfoCard(label = "Expira en", value = formattedExpirationDate)
                         ProductInfoCard(label = "Descuento", value = "${it.discount}%")
-                        ProductInfoCard(label = "Tienda", value = it.businessId)
+                        ProductInfoCard(label = "Tienda", value = business?.name ?: "Cargando...")
                     }
 
                     Text(text = "Descripción", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(text = it.description, style = MaterialTheme.typography.bodyMedium)
 
-                    InstructionsIngredientsSwitch()
 
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = colors.surface),
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                    ) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Red)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Contiene grasas trans y calorías altas.", style = MaterialTheme.typography.bodySmall, color = colors.onBackground)
-                        }
-                    }
+
+                    InstructionsMapSwitch(
+                        businessLat = business?.latitude,
+                        businessLng = business?.longitude
+                    )
+
+
+
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -223,56 +222,104 @@ fun ProductImageWithBlur(imageUrl: String) {
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-fun InstructionsIngredientsSwitch() {
+fun InstructionsMapSwitch(businessLat: Double?, businessLng: Double?) {
     var selectedOption by remember { mutableStateOf("Instrucciones") }
-    val options = listOf("Instrucciones", "Ingredientes")
-    val selectedIndex = options.indexOf(selectedOption)
     val colors = MaterialTheme.colorScheme
 
-    val animOffset by animateFloatAsState(
-        targetValue = selectedIndex.toFloat(), label = ""
-    )
-
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(25.dp))
-            .background(colors.surface)
-    ) {
-        val toggleWidth = maxWidth.value
-        val indicatorWidth = toggleWidth / 2
-        val offsetX = animOffset * indicatorWidth
-
-        Box(
-            modifier = Modifier
-                .offset(x = offsetX.dp)
-                .width(indicatorWidth.dp)
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(25.dp))
-                .background(colors.primary)
+    Column {
+        // Toggle
+        val options = listOf("Instrucciones", "Mapa")
+        val selectedIndex = options.indexOf(selectedOption)
+        val animOffset by animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
+            label = ""
         )
 
-        Row(modifier = Modifier.fillMaxSize()) {
-            options.forEach { option ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clickable { selectedOption = option },
-                    contentAlignment = Alignment.Center
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(25.dp))
+                .background(colors.surface)
+        ) {
+            val toggleWidth = maxWidth.value
+            val indicatorWidth = toggleWidth / 2
+            val offsetX = animOffset * indicatorWidth
+
+            Box(
+                modifier = Modifier
+                    .offset(x = offsetX.dp)
+                    .width(indicatorWidth.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(colors.primary)
+            )
+
+            Row(modifier = Modifier.fillMaxSize()) {
+                options.forEach { option ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable { selectedOption = option },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = option,
+                            color = if (selectedOption == option) Color.White else Color.Gray,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Content
+        if (selectedOption == "Instrucciones") {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = colors.surface),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Red)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = option,
-                        color = if (selectedOption == option) Color.White else Color.Gray,
-                        fontWeight = FontWeight.Bold
+                        text = "Contiene grasas trans y calorías altas.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onBackground
                     )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (businessLat != null && businessLng != null) {
+                    BusinessMap(
+                        businessLat = businessLat,
+                        businessLng = businessLng,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text("Ubicación no disponible", modifier = Modifier.align(Alignment.Center))
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 fun AddToCartButtonAnimated(

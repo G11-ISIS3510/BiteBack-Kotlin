@@ -5,10 +5,22 @@ import kotlinx.coroutines.tasks.await
 import com.kotlin.biteback.data.model.Product
 import com.google.firebase.Timestamp
 import android.util.LruCache
+import com.kotlin.biteback.data.model.Business
 
 class ProductDetailRepository {
     private val db = FirebaseFirestore.getInstance()
     private val productCache = LruCache<String, Product>(10)
+
+    suspend fun getBusinessById(businessId: String): Business? {
+        val snapshot = FirebaseFirestore.getInstance()
+            .collection("business")
+            .document(businessId)
+            .get()
+            .await()
+
+        return snapshot.toObject(Business::class.java)
+    }
+
 
     suspend fun getBusinessName(businessId: String): String {
         return try {
