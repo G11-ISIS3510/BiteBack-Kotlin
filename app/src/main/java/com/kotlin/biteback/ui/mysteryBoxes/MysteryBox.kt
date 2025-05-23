@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,21 +35,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kotlin.biteback.ui.components.NavBar
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 
 @Composable
 fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxViewModel) {
+    val shoppingCartViewModel: ShoppingCartViewModel = viewModel()
     var quantity by remember { mutableStateOf(2) }
-
     val products by mysteryBoxViewModel.products.collectAsState()
+    val basePrice = 25000
+    val totalPrice = basePrice * quantity
 
     // Llama a fetchProducts cuando esta pantalla se muestre por primera vez
     LaunchedEffect(Unit) {
@@ -72,15 +73,38 @@ fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxVie
                 }
             )
 
-            MysteryCard(
+/*            MysteryCard(
                 imageRes = com.kotlin.biteback.R.drawable.mystery_image, // usa tu recurso local
                 title = "Cajita misteriosa (?)",
                 price = 25,
                 quantity = quantity,
                 onIncrease = { quantity++ },
                 onDecrease = { if (quantity > 1) quantity-- },
-                onBuyClick = { /* Acción de compra */ }
+                onBuyClick = { *//* Acción de compra *//* }
+            )*/
+            val context = LocalContext.current
+            MysteryCard(
+                imageRes = com.kotlin.biteback.R.drawable.mystery_image,
+                title = "Cajita misteriosa (?)",
+                price = totalPrice,
+                quantity = quantity,
+                onIncrease = { quantity++ },
+                onDecrease = { if (quantity > 1) quantity-- },
+                availableProducts = products,
+                onBuyClick = { selectedQuantity ->
+                    val randomProducts = products.shuffled().take(selectedQuantity)
+
+                    shoppingCartViewModel.addMysteryBoxToCart(
+                        context = context,
+                        name = "Cajita misteriosa",
+                        price = basePrice.toDouble(),
+                        quantity = selectedQuantity,
+                        contents = randomProducts
+                    )
+                }
             )
+
+
             Spacer(modifier = Modifier.height(15.dp))
             Row(
                 modifier = Modifier
