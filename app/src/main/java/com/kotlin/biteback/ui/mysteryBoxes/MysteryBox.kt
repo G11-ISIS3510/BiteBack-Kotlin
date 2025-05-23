@@ -73,15 +73,6 @@ fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxVie
                 }
             )
 
-/*            MysteryCard(
-                imageRes = com.kotlin.biteback.R.drawable.mystery_image, // usa tu recurso local
-                title = "Cajita misteriosa (?)",
-                price = 25,
-                quantity = quantity,
-                onIncrease = { quantity++ },
-                onDecrease = { if (quantity > 1) quantity-- },
-                onBuyClick = { *//* Acción de compra *//* }
-            )*/
             val context = LocalContext.current
             MysteryCard(
                 imageRes = com.kotlin.biteback.R.drawable.mystery_image,
