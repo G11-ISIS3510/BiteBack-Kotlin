@@ -87,7 +87,9 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
                     priceBefore = box.price.toInt(),
                     quantity = quantity,
                     onIncrease = {
-
+                        mysteryBoxQuantityMap = mysteryBoxQuantityMap.toMutableMap().apply {
+                            this[box.id] = quantity + 1
+                        }
                     },
                     onDecrease = {
                         if (quantity > 1) {

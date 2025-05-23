@@ -179,6 +179,11 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
             isMysteryBox = true,
             contents = contents
         )
+        // DEBUG: imprimir los productos seleccionados
+        Log.d("MysteryBox", "Productos seleccionados en caja misteriosa:")
+        contents.forEach { product ->
+            Log.d("MysteryBox", "→ ${product.name} (ID: ${product.id})")
+        }
         viewModelScope.launch {
             DataStoreManager.addMysteryBoxToCart(context, item)
             fetchMysteryBoxes()
