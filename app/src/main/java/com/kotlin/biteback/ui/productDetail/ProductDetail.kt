@@ -223,12 +223,12 @@ fun ProductImageWithBlur(imageUrl: String) {
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun InstructionsMapSwitch(businessLat: Double?, businessLng: Double?) {
-    var selectedOption by remember { mutableStateOf("Instrucciones") }
+    var selectedOption by remember { mutableStateOf("Advertencias") }
     val colors = MaterialTheme.colorScheme
 
     Column {
         // Toggle
-        val options = listOf("Instrucciones", "Mapa")
+        val options = listOf("Advertencias", "Mapa")
         val selectedIndex = options.indexOf(selectedOption)
         val animOffset by animateFloatAsState(
             targetValue = selectedIndex.toFloat(),
@@ -278,7 +278,7 @@ fun InstructionsMapSwitch(businessLat: Double?, businessLng: Double?) {
         Spacer(modifier = Modifier.height(8.dp))
 
         // Content
-        if (selectedOption == "Instrucciones") {
+        if (selectedOption == "Advertencias") {
             Card(
                 colors = CardDefaults.cardColors(containerColor = colors.surface),
                 modifier = Modifier
