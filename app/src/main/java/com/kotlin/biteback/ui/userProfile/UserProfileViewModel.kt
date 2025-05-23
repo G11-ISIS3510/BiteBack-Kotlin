@@ -2,15 +2,17 @@ package com.kotlin.biteback.ui.userProfile
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kotlin.biteback.data.model.User
 import com.kotlin.biteback.data.repository.UserProfileRepository
 import com.kotlin.biteback.utils.LocalStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
+import kotlinx.coroutines.withContext
 
 class UserProfileViewModel(
     private val repository: UserProfileRepository,
@@ -45,20 +47,30 @@ class UserProfileViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userProfile = repository.loadUserProfile()
-                _user.value = userProfile?.copy(
-                    name = LocalStorage.getUserName(context, userEmail).ifEmpty { userProfile.name },
-                    phoneNumber = LocalStorage.getUserPhone(context, userEmail).ifEmpty { userProfile.phoneNumber }
+                val userProfile = withContext(Dispatchers.IO) {
+                    repository.loadUserProfile()
+                }
+
+                val (localName, localPhone) = withContext(Dispatchers.IO) {
+                    val name = LocalStorage.getUserName(context, userEmail)
+                    val phone = LocalStorage.getUserPhone(context, userEmail)
+                    name to phone
+                }
+
+                val finalUser = userProfile?.copy(
+                    name = if (localName.isNotEmpty()) localName else userProfile.name,
+                    phoneNumber = if (localPhone.isNotEmpty()) localPhone else userProfile.phoneNumber
                 ) ?: User(
-                    name = LocalStorage.getUserName(context, userEmail),
-                    phoneNumber = LocalStorage.getUserPhone(context, userEmail),
+                    name = localName,
+                    phoneNumber = localPhone,
                     email = userEmail,
                     profileImageUrl = "",
                     points = 0
                 )
 
-                _tempName.value = _user.value?.name ?: ""
-                _tempPhoneNumber.value = _user.value?.phoneNumber ?: ""
+                _user.value = finalUser
+                _tempName.value = finalUser.name
+                _tempPhoneNumber.value = finalUser.phoneNumber
 
             } catch (e: Exception) {
                 _updateMessage.value = "Error al cargar perfil: ${e.message}"
@@ -83,8 +95,10 @@ class UserProfileViewModel(
                 val name = _tempName.value.trim()
                 val phone = _tempPhoneNumber.value.trim()
 
-                LocalStorage.saveUserName(context, userEmail, name)
-                LocalStorage.saveUserPhone(context, userEmail, phone)
+                withContext(Dispatchers.IO) {
+                    LocalStorage.saveUserName(context, userEmail, name)
+                    LocalStorage.saveUserPhone(context, userEmail, phone)
+                }
 
                 val success = repository.updateProfile(name = name, phoneNumber = phone)
 
@@ -150,8 +164,6 @@ class UserProfileViewModel(
         }
     }
 
-
-
     fun clearMessage() {
         _updateMessage.value = null
     }
@@ -160,4 +172,3 @@ class UserProfileViewModel(
         loadUserProfile()
     }
 }
-
