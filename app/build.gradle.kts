@@ -60,6 +60,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts:1.7.8")
     implementation("androidx.compose.material:material:1.7.8")
     implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation("androidx.core:core-ktx:1.12.0")
 
     // Firebase (usa BOM para evitar conflictos)
     implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
