@@ -3,11 +3,9 @@ package com.kotlin.biteback.ui.shoppingCart
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kotlin.biteback.data.model.PendingPurchase
 import com.kotlin.biteback.data.model.Product
-import com.kotlin.biteback.data.model.ProductWithBusiness
 import com.kotlin.biteback.data.repository.ShoppingCartRepository
 import com.kotlin.biteback.utils.DataStoreManager
 import kotlinx.coroutines.Job
@@ -17,10 +15,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
+import com.kotlin.biteback.data.model.MysteryCart
+import com.kotlin.biteback.data.model.ProductWithBusiness
 import kotlinx.coroutines.withContext
+import java.util.UUID
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import com.kotlin.biteback.data.repository.CartRepository
 
-class ShoppingCartViewModel(application: Application) : AndroidViewModel(application) {
+class ShoppingCartViewModel(application: Application, private val cartRepository: CartRepository) : AndroidViewModel(application) {
 
 
     private val purchaseRepository = ShoppingCartRepository()
@@ -32,11 +37,26 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
     private var purchaseStartTime: Long? = null
     private var timeoutJob: Job? = null
 
+    private val _cartItems = MutableStateFlow<List<MysteryCart>>(emptyList())
+    val cartItems: StateFlow<List<MysteryCart>> = _cartItems
+    // MysteryProducts
+    private val _mysteryBoxes = MutableStateFlow<List<MysteryCart>>(emptyList())
+    val mysteryBoxes: StateFlow<List<MysteryCart>> = _mysteryBoxes
+
+
+
 
     fun fetchMercarProducts() {
         viewModelScope.launch {
             DataStoreManager.getMercadosProducts(getApplication()).collect {
                 _mercarProducts.value = it
+            }
+        }
+    }
+    fun fetchMysteryBoxes() {
+        viewModelScope.launch {
+            DataStoreManager.getMysteryBoxes(getApplication()).collect {
+                _mysteryBoxes.value = it
             }
         }
     }
@@ -54,7 +74,7 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
             quantityMap = quantityMap,
             elapsedTime = elapsedTime,
             onSuccess = {
-                clearCartTimer() // Limpia el timer si el pago fue exitoso
+                clearCartTimer()
                 onSuccess()
             },
             onError = onError
@@ -64,6 +84,7 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
     fun clearCart() {
         viewModelScope.launch {
             DataStoreManager.clearMercarProducts(getApplication())
+            DataStoreManager.clearMysteryCart(getApplication())
         }
     }
 
@@ -148,6 +169,42 @@ class ShoppingCartViewModel(application: Application) : AndroidViewModel(applica
                     }
                 )
             }
+        }
+    }
+
+    fun addRecentBox(context: Context, box: MysteryCart) {
+        viewModelScope.launch {
+            cartRepository.addToRecent(box)
+            DataStoreManager.saveRecentMysteryBox(context, box)
+        }
+    }
+
+
+
+    fun addMysteryBoxToCart(
+        context: Context,
+        name: String,
+        price: Double,
+        quantity: Int,
+        contents: List<ProductWithBusiness>
+    ) {
+        val item = MysteryCart(
+            id = UUID.randomUUID().toString(),
+            name = name,
+            price = price,
+            quantity = quantity,
+            isMysteryBox = true,
+            contents = contents
+        )
+        // DEBUG:
+        Log.d("MysteryBox", "Productos seleccionados en caja misteriosa:")
+        contents.forEach { product ->
+            Log.d("MysteryBox", "→ ${product.name} (ID: ${product.id})")
+        }
+        viewModelScope.launch {
+            DataStoreManager.addMysteryBoxToCart(context, item)
+            addRecentBox(context, item)
+            fetchMysteryBoxes()
         }
     }
 

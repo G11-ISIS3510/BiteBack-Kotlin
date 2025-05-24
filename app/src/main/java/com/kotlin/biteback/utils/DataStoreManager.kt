@@ -4,9 +4,13 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
+import com.kotlin.biteback.data.model.MysteryCart
 import com.kotlin.biteback.data.model.Product
 import com.kotlin.biteback.data.model.ProductWithBusiness
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -20,7 +24,11 @@ object DataStoreManager  {
     private val RECENT_PRODUCTS_KEY = stringPreferencesKey("recent_products")
     // Key for mercadeo products
     private val MERCAR_PRODUCTS_KEY = stringPreferencesKey("mercar_products")
-
+    // Key for MysteryBoxes
+    private val MYSTERY_CART_KEY = stringPreferencesKey("mystery_cart")
+    object PreferencesKeys {
+        val RECENT_MYSTERY_BOXES = stringPreferencesKey("recent_mystery_boxes")
+    }
 
     suspend fun saveSearchQuery(context: Context, query: String) {
         context.dataStore.edit { prefs ->
@@ -93,4 +101,64 @@ object DataStoreManager  {
             prefs[MERCAR_PRODUCTS_KEY] = Json.encodeToString(emptyList<Product>())
         }
     }
+
+    suspend fun addMysteryBoxToCart(context: Context, mysteryBox: MysteryCart) {
+        context.dataStore.edit { prefs ->
+            val currentList = prefs[MYSTERY_CART_KEY]?.let {
+                Json.decodeFromString<List<MysteryCart>>(it)
+            } ?: emptyList()
+
+            val updatedList = listOf(mysteryBox) + currentList
+            prefs[MYSTERY_CART_KEY] = Json.encodeToString(updatedList)
+        }
+    }
+
+    fun getMysteryBoxes(context: Context): Flow<List<MysteryCart>> {
+        return context.dataStore.data.map { prefs ->
+            prefs[MYSTERY_CART_KEY]?.let {
+                Json.decodeFromString(it)
+            } ?: emptyList()
+        }
+    }
+
+    suspend fun removeMysteryBoxFromCart(context: Context, mysteryBoxId: String) {
+        context.dataStore.edit { prefs ->
+            val currentList = prefs[MYSTERY_CART_KEY]?.let {
+                Json.decodeFromString<List<MysteryCart>>(it)
+            } ?: emptyList()
+
+            val updatedList = currentList.filter { it.id != mysteryBoxId }
+            prefs[MYSTERY_CART_KEY] = Json.encodeToString(updatedList)
+        }
+    }
+
+    suspend fun clearMysteryCart(context: Context) {
+        context.dataStore.edit { prefs ->
+            prefs[MYSTERY_CART_KEY] = Json.encodeToString(emptyList<MysteryCart>())
+        }
+    }
+
+    suspend fun saveRecentMysteryBox(context: Context, box: MysteryCart) {
+        val gson = Gson()
+        val prefs = context.dataStore.data.first()
+        val currentListJson = prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] ?: "[]"
+        val currentList = gson.fromJson(currentListJson, object : TypeToken<List<MysteryCart>>() {}.type) as List<MysteryCart>
+
+        // Mantener solo los últimos 5
+        val updatedList = listOf(box) + currentList.take(4)
+        val updatedJson = gson.toJson(updatedList)
+
+        context.dataStore.edit { prefs ->
+            prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] = updatedJson
+        }
+    }
+
+    suspend fun getRecentMysteryBoxes(context: Context): List<MysteryCart> {
+        val gson = Gson()
+        val prefs = context.dataStore.data.first()
+        val json = prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] ?: return emptyList()
+        return gson.fromJson(json, object : TypeToken<List<MysteryCart>>() {}.type)
+    }
+
+
 }
