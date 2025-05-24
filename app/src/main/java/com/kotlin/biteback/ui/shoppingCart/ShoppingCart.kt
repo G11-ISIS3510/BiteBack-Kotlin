@@ -41,16 +41,20 @@ import android.content.Context
 import com.kotlin.biteback.utils.NetworkUtils
 import android.widget.Toast
 import com.kotlin.biteback.data.model.Product
+import com.kotlin.biteback.utils.DataStoreManager
 
 
 @Composable
 fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartViewModel ) {
 
     var quantityMap by remember { mutableStateOf(mutableMapOf<String, Int>()) }
-    val mercadingProducts by shoppingViewModel.mercarProducts.collectAsState()
+    var mysteryBoxQuantityMap by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
 
+    val mercadingProducts by shoppingViewModel.mercarProducts.collectAsState()
+    val mysteryBoxes by shoppingViewModel.mysteryBoxes.collectAsState()
     LaunchedEffect(Unit) {
         shoppingViewModel.fetchMercarProducts()
+        shoppingViewModel.fetchMysteryBoxes()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -73,6 +77,40 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
             )
             val context = LocalContext.current
             val coroutineScope = rememberCoroutineScope()
+            mysteryBoxes.forEach { box ->
+                val quantity = mysteryBoxQuantityMap[box.id] ?: box.quantity
+
+                CartItemCard(
+                    imageUrl = "https://img.freepik.com/free-vector/realistic-question-box-mockup_23-2149489472.jpg", // imagen genérica
+                    productName = box.name,
+                    discountPercent = 0,
+                    priceBefore = box.price.toInt(),
+                    quantity = quantity,
+                    onIncrease = {
+                        mysteryBoxQuantityMap = mysteryBoxQuantityMap.toMutableMap().apply {
+                            this[box.id] = quantity + 1
+                        }
+                    },
+                    onDecrease = {
+                        if (quantity > 1) {
+                            mysteryBoxQuantityMap = mysteryBoxQuantityMap.toMutableMap().apply {
+                                this[box.id] = quantity - 1
+                            }
+                        }
+                    },
+                    onDelete = {
+                        coroutineScope.launch {
+                            DataStoreManager.removeMysteryBoxFromCart(context, box.id)
+                        }
+                    },
+                    onClick = {
+                        // Mostrar contenido de la caja
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             mercadingProducts.forEach { product ->
                 val quantity = quantityMap[product.id] ?: 1
                 val priceBefore = product.price.toInt()
@@ -118,10 +156,19 @@ fun ShoppingCart(navController: NavController, shoppingViewModel: ShoppingCartVi
             val context = LocalContext.current
 
             PayNowButtonAnimated(
-                totalPrice = mercadingProducts.sumOf {
-                    val quantity = quantityMap[it.id] ?: 1
-                    val discountedPrice = it.price.toInt() - (it.price.toInt() * it.discount.toInt() / 100)
-                    discountedPrice * quantity
+                totalPrice = run {
+                    val productTotal = mercadingProducts.sumOf {
+                        val quantity = quantityMap[it.id] ?: 1
+                        val discountedPrice = it.price.toInt() - (it.price.toInt() * it.discount.toInt() / 100)
+                        discountedPrice * quantity
+                    }
+
+                    val mysteryBoxTotal = mysteryBoxes.sumOf {
+                        val quantity = mysteryBoxQuantityMap[it.id] ?: it.quantity
+                        it.price.toInt() * quantity
+                    }
+
+                    productTotal + mysteryBoxTotal
                 },
                 context = context,
                 mercadingProducts = mercadingProducts,

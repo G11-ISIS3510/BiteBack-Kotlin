@@ -35,10 +35,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Notifications
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -67,10 +68,7 @@ import com.kotlin.biteback.viewModel.BusinessViewModel
 import com.kotlin.biteback.viewModel.BusinessViewModelFactory
 import com.kotlin.biteback.data.repository.BusinessRepository
 import androidx.compose.material.icons.outlined.ExitToApp
-
-
-import com.kotlin.biteback.utils.DataStoreManager
-import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
 import java.util.Locale
 
 
@@ -170,12 +168,12 @@ fun Home(navController: NavController ,
                     Text(text = "Productos encontrados: ${filteredProducts.size}") // Para depuración
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
+                LazyRow (
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    filteredProducts.forEach { product ->
+                    items(filteredProducts) { product ->
                         FoodCard(
                             image = product.image,
                             title = product.name,
@@ -185,7 +183,6 @@ fun Home(navController: NavController ,
                             expanded = false,
                             onAddClick = {
                                 searchViewModel.onProductClicked(product)
-
                                 val productId = product.id
                                 navController.navigate("productDetail/$productId")
                             }
@@ -255,14 +252,14 @@ fun Home(navController: NavController ,
 
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                uniqueCategories.forEach { category ->
+                items(uniqueCategories) { category ->
                     CategoryCard(
-                        icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // Ajusta según la categoría
+                        icon = painterResource(id = com.kotlin.biteback.R.drawable.donut), // o dinámico si lo implementas
                         text = category,
                         isSelected = category == selectedCategory,
                         onClick = { selectedCategory = category }
@@ -292,17 +289,20 @@ fun Home(navController: NavController ,
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
+
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 nearProducts.forEach { business ->
                     val productsList = business["filteredProducts"] as? List<Map<String, Any>> ?: emptyList()
-                    productsList.forEach { product ->
+                    items(productsList) { product ->
                         ProductCard(
-                            imageRes = (product["image"] as? String) ?: "https://imgix.ranker.com/user_node_img/50105/1002095730/original/1002095730-photo-u1?auto=format&q=60&fit=crop&fm=pjpg&dpr=2&w=355",
-                            discount = ((product["discount"] as? Number ?: (0.0 / 100))).toFloat(),
+                            imageRes = product["image"] as? String
+                                ?: "https://imgix.ranker.com/user_node_img/50105/1002095730/original/1002095730-photo-u1?auto=format&q=60&fit=crop&fm=pjpg&dpr=2&w=355",
+                            discount = (product["discount"] as? Number)?.toFloat() ?: 0f,
                             title = product["name"] as? String ?: "Producto sin nombre",
                             oldPrice = (product["price"] as? Number)?.toInt() ?: 0,
                             time = "15 minutos",
@@ -360,7 +360,6 @@ fun Home(navController: NavController ,
                 }
             }
 
-
             // Food Categories
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -370,12 +369,13 @@ fun Home(navController: NavController ,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
 
-                    .horizontalScroll(rememberScrollState())
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                filteredProducts.shuffled().take(3).forEach { product ->
+                items(filteredProducts.shuffled().take(3)) { product ->
                     FoodCard(
                         image = product.image,
                         title = product.name,
@@ -385,7 +385,6 @@ fun Home(navController: NavController ,
                         expanded = false,
                         onAddClick = {
                             searchViewModel.onProductClicked(product)
-
                             navController.navigate("productDetail/${product.id}")
                         }
                     )
