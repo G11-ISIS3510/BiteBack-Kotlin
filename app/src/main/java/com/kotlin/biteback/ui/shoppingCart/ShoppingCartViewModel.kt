@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import com.kotlin.biteback.data.model.MysteryCart
 import com.kotlin.biteback.data.model.ProductWithBusiness
-import com.kotlin.biteback.utils.RecentMysteryBoxCache
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import androidx.compose.runtime.State
@@ -85,6 +84,7 @@ class ShoppingCartViewModel(application: Application, private val cartRepository
     fun clearCart() {
         viewModelScope.launch {
             DataStoreManager.clearMercarProducts(getApplication())
+            DataStoreManager.clearMysteryCart(getApplication())
         }
     }
 

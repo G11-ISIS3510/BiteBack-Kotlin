@@ -41,8 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kotlin.biteback.data.model.MysteryCart
+import com.kotlin.biteback.ui.components.MysteryRecent
 import com.kotlin.biteback.ui.components.NavBar
 import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 
@@ -152,12 +151,13 @@ fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxVie
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 items(mysteryBoxes) { mysteryBox ->
-                    FoodCard(
-                        image = mysteryBox.contents.firstOrNull()?.image ?: "",  // Usamos la imagen del primer producto si existe
+                    MysteryRecent(
+                        id = mysteryBox.id,
+                        image = mysteryBox.contents.firstOrNull()?.image ?: "",
                         title = mysteryBox.name,
-                        discount = 0.0,  // Las cajas misteriosas no tienen descuento, por lo que pasamos null
-                        location = "",  // No tenemos ubicación en MysteryCart, lo dejamos vacío
+                        items = mysteryBox.quantity,
                         price = mysteryBox.price,
                         expanded = false,  // Aquí podrías agregar la lógica si es necesario expandir la caja misteriosa
                         onAddClick = {
