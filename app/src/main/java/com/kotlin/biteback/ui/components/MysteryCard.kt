@@ -60,7 +60,7 @@ fun MysteryCard(
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     availableProducts: List<ProductWithBusiness>,
-    onBuyClick: (Int) -> Unit // cantidad se pasa para uso interno
+    onBuyClick: (Int) -> Unit
 ) {
 
     val context = LocalContext.current

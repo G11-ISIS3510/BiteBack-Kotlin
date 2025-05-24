@@ -1,5 +1,6 @@
 package com.kotlin.biteback
 
+import android.app.Application
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -51,7 +52,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import com.kotlin.biteback.data.repository.CartRepository
 import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
+import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModelFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -100,7 +104,16 @@ fun NoInternetBanner(appViewModelParam: AppViewModel) {
     var connectionRestored by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val shoppingViewModel: ShoppingCartViewModel = viewModel()
+    val application = context.applicationContext as Application
+    val cartRepository = remember { CartRepository(context) }
+    val owner = checkNotNull(LocalViewModelStoreOwner.current)
+
+    val shoppingViewModel: ShoppingCartViewModel = viewModel(
+        modelClass = ShoppingCartViewModel::class.java,
+        viewModelStoreOwner = owner,
+        factory = ShoppingCartViewModelFactory(application, cartRepository)
+    )
+
 
     LaunchedEffect(isConnected) {
         if (!isConnected) {

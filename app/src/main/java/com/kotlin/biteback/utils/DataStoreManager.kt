@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import com.kotlin.biteback.data.model.MysteryCart
 import com.kotlin.biteback.data.model.Product
 import com.kotlin.biteback.data.model.ProductWithBusiness
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -23,7 +26,9 @@ object DataStoreManager  {
     private val MERCAR_PRODUCTS_KEY = stringPreferencesKey("mercar_products")
     // Key for MysteryBoxes
     private val MYSTERY_CART_KEY = stringPreferencesKey("mystery_cart")
-
+    object PreferencesKeys {
+        val RECENT_MYSTERY_BOXES = stringPreferencesKey("recent_mystery_boxes")
+    }
 
     suspend fun saveSearchQuery(context: Context, query: String) {
         context.dataStore.edit { prefs ->
@@ -132,4 +137,28 @@ object DataStoreManager  {
             prefs[MYSTERY_CART_KEY] = Json.encodeToString(emptyList<MysteryCart>())
         }
     }
+
+    suspend fun saveRecentMysteryBox(context: Context, box: MysteryCart) {
+        val gson = Gson()
+        val prefs = context.dataStore.data.first()
+        val currentListJson = prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] ?: "[]"
+        val currentList = gson.fromJson(currentListJson, object : TypeToken<List<MysteryCart>>() {}.type) as List<MysteryCart>
+
+        // Mantener solo los últimos 5
+        val updatedList = listOf(box) + currentList.take(4)
+        val updatedJson = gson.toJson(updatedList)
+
+        context.dataStore.edit { prefs ->
+            prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] = updatedJson
+        }
+    }
+
+    suspend fun getRecentMysteryBoxes(context: Context): List<MysteryCart> {
+        val gson = Gson()
+        val prefs = context.dataStore.data.first()
+        val json = prefs[PreferencesKeys.RECENT_MYSTERY_BOXES] ?: return emptyList()
+        return gson.fromJson(json, object : TypeToken<List<MysteryCart>>() {}.type)
+    }
+
+
 }

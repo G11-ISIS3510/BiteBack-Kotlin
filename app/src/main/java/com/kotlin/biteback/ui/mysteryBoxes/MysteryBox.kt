@@ -42,20 +42,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kotlin.biteback.data.model.MysteryCart
 import com.kotlin.biteback.ui.components.NavBar
 import com.kotlin.biteback.ui.shoppingCart.ShoppingCartViewModel
 
 @Composable
-fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxViewModel) {
-    val shoppingCartViewModel: ShoppingCartViewModel = viewModel()
+fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxViewModel, shoppingCartViewModel: ShoppingCartViewModel) {
+
     var quantity by remember { mutableStateOf(2) }
     val products by mysteryBoxViewModel.products.collectAsState()
+    val mysteryBoxes by mysteryBoxViewModel.mysteryBoxes.collectAsState()
     val basePrice = 25000
     val totalPrice = basePrice * quantity
 
     // Llama a fetchProducts cuando esta pantalla se muestre por primera vez
     LaunchedEffect(Unit) {
         mysteryBoxViewModel.fetchProducts()
+        mysteryBoxViewModel.loadRecentMysteryBoxes()
     }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -95,7 +98,6 @@ fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxVie
                 }
             )
 
-
             Spacer(modifier = Modifier.height(15.dp))
             Row(
                 modifier = Modifier
@@ -130,7 +132,48 @@ fun MysteryBox(navController: NavController, mysteryBoxViewModel : MysteryBoxVie
                 }
             }
 
+            //
+            Spacer(modifier = Modifier.height(15.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Cajitas recientemente compradas ",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(mysteryBoxes) { mysteryBox ->
+                    FoodCard(
+                        image = mysteryBox.contents.firstOrNull()?.image ?: "",  // Usamos la imagen del primer producto si existe
+                        title = mysteryBox.name,
+                        discount = 0.0,  // Las cajas misteriosas no tienen descuento, por lo que pasamos null
+                        location = "",  // No tenemos ubicación en MysteryCart, lo dejamos vacío
+                        price = mysteryBox.price,
+                        expanded = false,  // Aquí podrías agregar la lógica si es necesario expandir la caja misteriosa
+                        onAddClick = {
+                            // Lógica para agregar la MysteryBox al carrito
+
+                        }
+                    )
+                }
+            }
+
         }
+
+
+
+
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
