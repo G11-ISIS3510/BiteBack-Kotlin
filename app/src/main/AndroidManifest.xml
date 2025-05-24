@@ -45,6 +45,11 @@
             </intent-filter>
         </service>
 
+        <meta-data
+            android:name="com.mapbox.token"
+            android:value="pk.eyJ1IjoiZGVmYXVsdCIsImEiOiJja2N3bHVoMWswMDF6MnZwb21hZ2IyZ2J5In0.k4YTZNUW63JpF2-uHOQ3Mg" />
+
+
     </application>
 
 </manifest>
